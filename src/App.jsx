@@ -15,11 +15,11 @@ const VALID_IDS = new Set(FIXTURES.filter(f => f.homeScore === null).map(f => f.
 
 const TABS = [
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
+  { id: 'bracket',   label: 'Bracket',   icon: '🏆' },
+  { id: 'ai',        label: 'AI Picks',  icon: '🤖' },
   { id: 'schedule',  label: 'Schedule',  icon: '📅' },
   { id: 'results',   label: 'Results',   icon: '🏁' },
   { id: 'table',     label: 'Standings', icon: '📊' },
-  { id: 'bracket',   label: 'Bracket',   icon: '🏆' },
-  { id: 'ai',        label: 'AI Picks',  icon: '🤖' },
 ]
 
 export default function App() {
