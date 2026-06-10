@@ -5,9 +5,13 @@ import Results from './components/Results.jsx'
 import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
+import { FIXTURES } from './data.js'
 import styles from './App.module.css'
 
 const STORAGE_KEY = 'wc2026_predictions'
+
+// Only count valid upcoming fixture IDs
+const VALID_IDS = new Set(FIXTURES.filter(f => f.homeScore === null).map(f => f.id))
 
 const TABS = [
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
@@ -21,27 +25,29 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('predictor')
 
-  // Load from localStorage on mount
   const [predictions, setPredictions] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      return saved ? JSON.parse(saved) : {}
+      if (!saved) return {}
+      const parsed = JSON.parse(saved)
+      // Strip any keys that aren't valid fixture IDs
+      return Object.fromEntries(Object.entries(parsed).filter(([id]) => VALID_IDS.has(id)))
     } catch { return {} }
   })
 
-  // Save to localStorage whenever predictions change
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions))
-    } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions)) } catch {}
   }, [predictions])
 
   const predict = useCallback((fixtureId, h, a) => {
+    if (!VALID_IDS.has(fixtureId)) return
     setPredictions(prev => ({ ...prev, [fixtureId]: { h, a } }))
   }, [])
 
   const bulkPredict = useCallback((map) => {
-    setPredictions(prev => ({ ...prev, ...map }))
+    // Only merge valid fixture IDs
+    const clean = Object.fromEntries(Object.entries(map).filter(([id]) => VALID_IDS.has(id)))
+    setPredictions(prev => ({ ...prev, ...clean }))
   }, [])
 
   const clearAll = useCallback(() => {
@@ -49,8 +55,10 @@ export default function App() {
     localStorage.removeItem(STORAGE_KEY)
   }, [])
 
-  const predCount = Object.values(predictions).filter(p => p.h != null).length
-  const totalUpcoming = 48
+  // Count only valid predictions with actual scores
+  const predCount = Object.entries(predictions)
+    .filter(([id, p]) => VALID_IDS.has(id) && p.h != null && p.a != null).length
+  const totalUpcoming = VALID_IDS.size
 
   return (
     <div className={styles.app}>
