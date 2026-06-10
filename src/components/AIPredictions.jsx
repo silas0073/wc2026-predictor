@@ -42,10 +42,21 @@ export default function AIPredictions({ onApply }) {
         body: JSON.stringify({ prompt: buildPrompt() }),
       })
 
-      const data = await res.json()
+      const raw = await res.text()
+      let data
+      try { data = JSON.parse(raw) } catch {
+        throw new Error('Server returned invalid response: ' + raw.slice(0, 200))
+      }
+
+      if (data.error) throw new Error(data.error + (data.detail ? ': ' + data.detail.slice(0, 200) : ''))
+
       const text = data.content?.[0]?.text || ''
+      if (!text) throw new Error('Empty response from AI')
       const clean = text.replace(/```json|```/g, '').trim()
-      const parsed = JSON.parse(clean)
+      let parsed
+      try { parsed = JSON.parse(clean) } catch {
+        throw new Error('AI returned invalid JSON: ' + clean.slice(0, 200))
+      }
 
       setPreds(parsed)
       setStatus('done')
