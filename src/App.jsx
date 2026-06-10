@@ -1,10 +1,13 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import GroupStage from './components/GroupStage.jsx'
 import Schedule from './components/Schedule.jsx'
 import Results from './components/Results.jsx'
 import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
+import AIPredictions from './components/AIPredictions.jsx'
 import styles from './App.module.css'
+
+const STORAGE_KEY = 'wc2026_predictions'
 
 const TABS = [
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
@@ -12,11 +15,26 @@ const TABS = [
   { id: 'results',   label: 'Results',   icon: '🏁' },
   { id: 'table',     label: 'Standings', icon: '📊' },
   { id: 'bracket',   label: 'Bracket',   icon: '🏆' },
+  { id: 'ai',        label: 'AI Picks',  icon: '🤖' },
 ]
 
 export default function App() {
   const [tab, setTab] = useState('predictor')
-  const [predictions, setPredictions] = useState({})
+
+  // Load from localStorage on mount
+  const [predictions, setPredictions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      return saved ? JSON.parse(saved) : {}
+    } catch { return {} }
+  })
+
+  // Save to localStorage whenever predictions change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions))
+    } catch {}
+  }, [predictions])
 
   const predict = useCallback((fixtureId, h, a) => {
     setPredictions(prev => ({ ...prev, [fixtureId]: { h, a } }))
@@ -26,10 +44,13 @@ export default function App() {
     setPredictions(prev => ({ ...prev, ...map }))
   }, [])
 
-  const clearAll = useCallback(() => setPredictions({}), [])
+  const clearAll = useCallback(() => {
+    setPredictions({})
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
 
-  const predCount = Object.keys(predictions).length
-  const totalUpcoming = 48 // all group stage matches
+  const predCount = Object.values(predictions).filter(p => p.h != null).length
+  const totalUpcoming = 48
 
   return (
     <div className={styles.app}>
@@ -45,11 +66,12 @@ export default function App() {
           <div className={styles.headerRight}>
             {predCount > 0 && (
               <div className={styles.predPill}>
-                <span className={styles.predNum}>{predCount}</span>/{totalUpcoming} predicted
+                <span className={styles.predNum}>{predCount}</span>/{totalUpcoming}
+                <span className={styles.savedDot} title="Saved">💾</span>
               </div>
             )}
             {predCount > 0 && (
-              <button className={styles.clearBtn} onClick={clearAll}>Clear all</button>
+              <button className={styles.clearBtn} onClick={clearAll}>Clear</button>
             )}
           </div>
         </div>
@@ -77,6 +99,7 @@ export default function App() {
           {tab === 'results'   && <Results />}
           {tab === 'table'     && <TableView predictions={predictions} />}
           {tab === 'bracket'   && <Bracket predictions={predictions} />}
+          {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
         </div>
       </main>
     </div>
