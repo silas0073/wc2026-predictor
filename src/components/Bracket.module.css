@@ -95,3 +95,11 @@
 .flag { font-size:1rem; flex-shrink:0; }
 .name { flex:1; font-weight:600; }
 .tick { font-size:.8rem; color:var(--gold); }
+
+.headerBtns { display:flex; align-items:center; gap:8px; }
+.autoAllBtn {
+  font-size:.75rem; font-weight:700; color:#111;
+  background:var(--gold); border:none; border-radius:8px;
+  padding:6px 14px; transition:opacity .15s; white-space:nowrap;
+}
+.autoAllBtn:hover { opacity:.85; }
