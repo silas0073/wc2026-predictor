@@ -103,3 +103,8 @@
   padding:6px 14px; transition:opacity .15s; white-space:nowrap;
 }
 .autoAllBtn:hover { opacity:.85; }
+
+.matchNote {
+  font-size:.58rem; color:var(--muted2); font-weight:400;
+  font-family:var(--mono); letter-spacing:.04em;
+}
