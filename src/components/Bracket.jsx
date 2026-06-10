@@ -1,191 +1,221 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TEAMS } from '../data.js'
 import { groupStandings, simulateScore } from '../utils.js'
 import { GROUP_LABELS } from '../data.js'
 import styles from './Bracket.module.css'
 
-// Derive Round of 32 seedings from group results
+const BRACKET_KEY = 'wc2026_bracket'
+
 function deriveR32(predictions) {
-  const winners = {}
-  const runners = {}
+  const winners = {}, runners = {}
   GROUP_LABELS.forEach(g => {
     const rows = groupStandings(g, predictions)
     winners[g] = rows[0]?.code
     runners[g] = rows[1]?.code
   })
-  // Official WC2026 R32 matchups (group winners vs runners-up)
-  // W=Winner, R=Runner-up
   return [
-    { id:'r32_1',  home: winners['A'] || '?A1', away: runners['B'] || '?B2' },
-    { id:'r32_2',  home: winners['B'] || '?B1', away: runners['A'] || '?A2' },
-    { id:'r32_3',  home: winners['C'] || '?C1', away: runners['D'] || '?D2' },
-    { id:'r32_4',  home: winners['D'] || '?D1', away: runners['C'] || '?C2' },
-    { id:'r32_5',  home: winners['E'] || '?E1', away: runners['F'] || '?F2' },
-    { id:'r32_6',  home: winners['F'] || '?F1', away: runners['E'] || '?E2' },
-    { id:'r32_7',  home: winners['G'] || '?G1', away: runners['H'] || '?H2' },
-    { id:'r32_8',  home: winners['H'] || '?H1', away: runners['G'] || '?G2' },
-    { id:'r32_9',  home: winners['I'] || '?I1', away: runners['J'] || '?J2' },
-    { id:'r32_10', home: winners['J'] || '?J1', away: runners['I'] || '?I2' },
-    { id:'r32_11', home: winners['K'] || '?K1', away: runners['L'] || '?L2' },
-    { id:'r32_12', home: winners['L'] || '?L1', away: runners['K'] || '?K2' },
-    { id:'r32_13', home: '3rd-best', away: '3rd-best' },
-    { id:'r32_14', home: '3rd-best', away: '3rd-best' },
-    { id:'r32_15', home: '3rd-best', away: '3rd-best' },
-    { id:'r32_16', home: '3rd-best', away: '3rd-best' },
+    { id:'r32_1',  home: winners['A'], away: runners['B'] },
+    { id:'r32_2',  home: winners['B'], away: runners['A'] },
+    { id:'r32_3',  home: winners['C'], away: runners['D'] },
+    { id:'r32_4',  home: winners['D'], away: runners['C'] },
+    { id:'r32_5',  home: winners['E'], away: runners['F'] },
+    { id:'r32_6',  home: winners['F'], away: runners['E'] },
+    { id:'r32_7',  home: winners['G'], away: runners['H'] },
+    { id:'r32_8',  home: winners['H'], away: runners['G'] },
+    { id:'r32_9',  home: winners['I'], away: runners['J'] },
+    { id:'r32_10', home: winners['J'], away: runners['I'] },
+    { id:'r32_11', home: winners['K'], away: runners['L'] },
+    { id:'r32_12', home: winners['L'], away: runners['K'] },
+    // 3rd place slots - TBD
+    { id:'r32_13', home: null, away: null, tbd: true },
+    { id:'r32_14', home: null, away: null, tbd: true },
+    { id:'r32_15', home: null, away: null, tbd: true },
+    { id:'r32_16', home: null, away: null, tbd: true },
   ]
 }
 
-function TeamChip({ code }) {
-  if (!code || code.startsWith('?') || code.startsWith('3rd')) {
-    return <span className={styles.tbd}>{code?.startsWith('3rd') ? '3rd-place TBD' : (code ? `${code.slice(1)} winner/runner-up` : 'TBD')}</span>
-  }
+function TeamBtn({ code, isWinner, onClick }) {
+  if (!code) return (
+    <div className={`${styles.teamBtn} ${styles.teamTbd}`}>TBD</div>
+  )
   const t = TEAMS[code]
-  if (!t) return <span className={styles.tbd}>{code}</span>
+  if (!t) return <div className={`${styles.teamBtn} ${styles.teamTbd}`}>{code}</div>
   return (
-    <span className={styles.chip}>
-      <span>{t.flag}</span>
-      <span className={styles.chipName}>{t.name}</span>
-      <span className={styles.chipCode}>{code}</span>
-    </span>
+    <button
+      className={`${styles.teamBtn} ${isWinner ? styles.teamWinner : ''}`}
+      onClick={onClick}
+    >
+      <span className={styles.flag}>{t.flag}</span>
+      <span className={styles.name}>{t.name}</span>
+      {isWinner && <span className={styles.tick}>✓</span>}
+    </button>
   )
 }
 
-function KOMatch({ home, away, winner, onPick }) {
-  const isUnknown = !home || !away || home.startsWith('?') || away.startsWith('?') ||
-    home.startsWith('3rd') || away.startsWith('3rd')
+function MatchCard({ match, winner, onPick, matchNum }) {
+  const { home, away, tbd } = match
+  const canPick = !tbd && home && away
 
   return (
-    <div className={styles.match}>
-      <div
-        className={`${styles.side} ${winner === home ? styles.sideWin : ''} ${!isUnknown && home !== '?' ? styles.sideClickable : ''}`}
-        onClick={() => !isUnknown && home && !home.startsWith('?') && onPick && onPick(home)}
-      >
-        <TeamChip code={home} />
-      </div>
-      <div
-        className={`${styles.side} ${winner === away ? styles.sideWin : ''} ${!isUnknown && away !== '?' ? styles.sideClickable : ''}`}
-        onClick={() => !isUnknown && away && !away.startsWith('?') && onPick && onPick(away)}
-      >
-        <TeamChip code={away} />
-      </div>
+    <div className={`${styles.matchCard} ${winner ? styles.matchDone : ''}`}>
+      <div className={styles.matchNum}>M{matchNum}</div>
+      <TeamBtn code={home} isWinner={winner === home} onClick={() => canPick && onPick(home)} />
+      <div className={styles.matchVs}>vs</div>
+      <TeamBtn code={away} isWinner={winner === away} onClick={() => canPick && onPick(away)} />
+    </div>
+  )
+}
+
+function RoundPanel({ title, matches, picks, onPick, onAutoFill, isActive, onActivate, completedCount }) {
+  const total = matches.filter(m => !m.tbd && m.home && m.away).length
+  const done = completedCount
+
+  return (
+    <div className={`${styles.round} ${isActive ? styles.roundActive : ''}`}>
+      <button className={styles.roundHeader} onClick={onActivate}>
+        <div className={styles.roundLeft}>
+          <span className={styles.roundTitle}>{title}</span>
+          <span className={`${styles.roundProgress} ${done === total ? styles.roundDone : ''}`}>
+            {done}/{total} picked
+          </span>
+        </div>
+        <span className={styles.roundChevron}>{isActive ? '▲' : '▼'}</span>
+      </button>
+
+      {isActive && (
+        <div className={styles.roundBody}>
+          <div className={styles.roundActions}>
+            <button className={styles.autoBtn} onClick={onAutoFill}>⚡ Auto-fill round</button>
+          </div>
+          <div className={styles.matchList}>
+            {matches.map((m, i) => (
+              <MatchCard
+                key={m.id}
+                match={m}
+                winner={picks[m.id]}
+                onPick={t => onPick(m.id, t)}
+                matchNum={i + 1}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 export default function Bracket({ predictions }) {
-  const r32 = deriveR32(predictions)
+  const r32matches = deriveR32(predictions)
 
-  // bracket state: picks at each round
-  const [r32picks,  setR32picks]  = useState({})
-  const [r16picks,  setR16picks]  = useState({})
-  const [qfpicks,   setQFpicks]   = useState({})
-  const [sfpicks,   setSFpicks]   = useState({})
-  const [finalpick, setFinalPick] = useState(null)
+  // Load bracket picks from localStorage
+  const [picks, setPicks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(BRACKET_KEY) || '{}') } catch { return {} }
+  })
+  const [activeRound, setActiveRound] = useState('r32')
 
-  const pickR32  = (id, team) => setR32picks(p  => ({ ...p, [id]:  team }))
-  const pickR16  = (id, team) => setR16picks(p  => ({ ...p, [id]:  team }))
-  const pickQF   = (id, team) => setQFpicks(p   => ({ ...p, [id]:  team }))
-  const pickSF   = (id, team) => setSFpicks(p   => ({ ...p, [id]:  team }))
+  useEffect(() => {
+    try { localStorage.setItem(BRACKET_KEY, JSON.stringify(picks)) } catch {}
+  }, [picks])
 
-  // Build R16 matchups from R32 winners (pairs: 1v2, 3v4, …)
-  const r16 = Array.from({ length: 8 }, (_, i) => ({
-    id: `r16_${i+1}`,
-    home: r32picks[r32[i*2]?.id],
-    away: r32picks[r32[i*2+1]?.id],
-  }))
-
-  const qf = Array.from({ length: 4 }, (_, i) => ({
-    id: `qf_${i+1}`,
-    home: r16picks[r16[i*2]?.id],
-    away: r16picks[r16[i*2+1]?.id],
-  }))
-
-  const sf = [
-    { id:'sf_1', home: qfpicks['qf_1'], away: qfpicks['qf_2'] },
-    { id:'sf_2', home: qfpicks['qf_3'], away: qfpicks['qf_4'] },
-  ]
-
-  const final = {
-    home: sfpicks['sf_1'],
-    away: sfpicks['sf_2'],
+  const pick = (round, id, team) => {
+    setPicks(prev => ({ ...prev, [`${round}_${id}`]: team }))
   }
 
-  const allGroupsDone = GROUP_LABELS.every(g => {
-    const rows = groupStandings(g, predictions)
-    return rows[0]?.P >= 3
-  })
+  const getPick = (round, id) => picks[`${round}_${id}`]
+
+  // Build each round's matches from previous winners
+  const r16matches = Array.from({ length: 8 }, (_, i) => ({
+    id: `r16_${i+1}`,
+    home: getPick('r32', r32matches[i*2]?.id),
+    away: getPick('r32', r32matches[i*2+1]?.id),
+  }))
+
+  const qfmatches = Array.from({ length: 4 }, (_, i) => ({
+    id: `qf_${i+1}`,
+    home: getPick('r16', r16matches[i*2]?.id),
+    away: getPick('r16', r16matches[i*2+1]?.id),
+  }))
+
+  const sfmatches = [
+    { id:'sf_1', home: getPick('qf','qf_1'), away: getPick('qf','qf_2') },
+    { id:'sf_2', home: getPick('qf','qf_3'), away: getPick('qf','qf_4') },
+  ]
+
+  const finalMatch = {
+    id: 'final_1',
+    home: getPick('sf','sf_1'),
+    away: getPick('sf','sf_2'),
+  }
+
+  const champion = getPick('final', 'final_1')
+
+  const autoFill = (roundKey, matches) => {
+    const newPicks = { ...picks }
+    matches.forEach(m => {
+      if (!m.tbd && m.home && m.away && !newPicks[`${roundKey}_${m.id}`]) {
+        const str_h = TEAMS[m.home]?.strength || 5
+        const str_a = TEAMS[m.away]?.strength || 5
+        newPicks[`${roundKey}_${m.id}`] = str_h >= str_a ? m.home : m.away
+      }
+    })
+    setPicks(newPicks)
+  }
+
+  const countDone = (roundKey, matches) =>
+    matches.filter(m => !m.tbd && m.home && m.away && getPick(roundKey, m.id)).length
+
+  const clearBracket = () => {
+    setPicks({})
+    localStorage.removeItem(BRACKET_KEY)
+  }
+
+  const rounds = [
+    { key: 'r32',   label: 'Round of 32',   matches: r32matches },
+    { key: 'r16',   label: 'Round of 16',   matches: r16matches },
+    { key: 'qf',    label: 'Quarter-finals', matches: qfmatches },
+    { key: 'sf',    label: 'Semi-finals',    matches: sfmatches },
+    { key: 'final', label: 'Final · Jul 19 · MetLife', matches: [finalMatch] },
+  ]
 
   return (
     <div className={styles.wrap}>
       <div className={styles.pageHeader}>
-        <h2>Knockout Bracket</h2>
-        <p>Click a team to advance them. Complete the group stage first to populate seedings.</p>
+        <div>
+          <h2>Knockout Bracket</h2>
+          <p>Tap a team to advance them round by round</p>
+        </div>
+        {Object.keys(picks).length > 0 && (
+          <button className={styles.clearBtn} onClick={clearBracket}>Reset bracket</button>
+        )}
       </div>
 
-      {!allGroupsDone && (
-        <div className={styles.notice}>
-          ⚠️ Complete all group stage predictions (or wait for real results) to see accurate R32 seedings.
-          Partial results shown where available.
-        </div>
-      )}
-
-      <div className={styles.bracket}>
-        {/* Round of 32 */}
-        <div className={styles.round}>
-          <div className={styles.roundLabel}>Round of 32</div>
-          <div className={styles.matches}>
-            {r32.map(m => (
-              <KOMatch key={m.id} home={m.home} away={m.away} winner={r32picks[m.id]} onPick={t => pickR32(m.id, t)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Round of 16 */}
-        <div className={styles.round}>
-          <div className={styles.roundLabel}>Round of 16</div>
-          <div className={styles.matches}>
-            {r16.map(m => (
-              <KOMatch key={m.id} home={m.home} away={m.away} winner={r16picks[m.id]} onPick={t => pickR16(m.id, t)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Quarter-finals */}
-        <div className={styles.round}>
-          <div className={styles.roundLabel}>Quarter-finals</div>
-          <div className={styles.matches}>
-            {qf.map(m => (
-              <KOMatch key={m.id} home={m.home} away={m.away} winner={qfpicks[m.id]} onPick={t => pickQF(m.id, t)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Semi-finals */}
-        <div className={styles.round}>
-          <div className={styles.roundLabel}>Semi-finals</div>
-          <div className={styles.matches}>
-            {sf.map(m => (
-              <KOMatch key={m.id} home={m.home} away={m.away} winner={sfpicks[m.id]} onPick={t => pickSF(m.id, t)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Final */}
-        <div className={styles.round}>
-          <div className={styles.roundLabel}>Final · Jul 19 · MetLife</div>
-          <div className={styles.matches}>
-            <KOMatch home={final.home} away={final.away} winner={finalpick} onPick={setFinalPick} />
-          </div>
-        </div>
-      </div>
-
-      {finalpick && TEAMS[finalpick] && (
+      {champion && TEAMS[champion] && (
         <div className={styles.champion}>
-          <div className={styles.champFlag}>{TEAMS[finalpick].flag}</div>
-          <div className={styles.champName}>{TEAMS[finalpick].name}</div>
-          <div className={styles.champLabel}>🏆 Your World Cup Champion</div>
+          <span className={styles.champFlag}>{TEAMS[champion].flag}</span>
+          <span className={styles.champName}>{TEAMS[champion].name}</span>
+          <span className={styles.champLabel}>🏆 Champion</span>
         </div>
       )}
+
+      <div className={styles.rounds}>
+        {rounds.map(r => (
+          <RoundPanel
+            key={r.key}
+            title={r.label}
+            matches={r.matches}
+            picks={Object.fromEntries(
+              Object.entries(picks)
+                .filter(([k]) => k.startsWith(r.key + '_'))
+                .map(([k, v]) => [k.replace(r.key + '_', ''), v])
+            )}
+            onPick={(id, team) => pick(r.key, id, team)}
+            onAutoFill={() => autoFill(r.key, r.matches)}
+            isActive={activeRound === r.key}
+            onActivate={() => setActiveRound(activeRound === r.key ? null : r.key)}
+            completedCount={countDone(r.key, r.matches)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
