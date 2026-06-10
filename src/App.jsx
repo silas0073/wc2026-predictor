@@ -60,7 +60,7 @@ export default function App() {
             <div className={styles.brandBall}>⚽</div>
             <div>
               <div className={styles.brandName}>World Cup 2026</div>
-              <div className={styles.brandSub}>Predictor · USA / CAN / MEX</div>
+              <div className={styles.brandSub}>Predictor · USA / CAN / MEX · v{__APP_VERSION__}</div>
             </div>
           </div>
           <div className={styles.headerRight}>
