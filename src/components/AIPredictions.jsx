@@ -1,25 +1,29 @@
 import React, { useState } from 'react'
-import { FIXTURES, TEAMS, GROUPS } from '../data.js'
+import { FIXTURES, TEAMS } from '../data.js'
 import { groupStandings } from '../utils.js'
 import { GROUP_LABELS } from '../data.js'
 import styles from './AIPredictions.module.css'
 
+const UPCOMING = FIXTURES.filter(f => f.homeScore === null)
+const VALID_IDS = new Set(UPCOMING.map(f => f.id))
+
 function buildPrompt() {
+  const ids = UPCOMING.map(f => f.id)
   const lines = [
-    'You are a football analyst predicting every FIFA World Cup 2026 group stage match.',
-    'For each match below, predict the score. Consider team strength, tournament history, and host advantage.',
-    'Reply ONLY with valid JSON — an object where each key is the fixture id and value is {"h": homeGoals, "a": awayGoals}.',
-    'Example: {"A1":{"h":2,"a":0},"A2":{"h":1,"a":1}}',
-    'Keep scores realistic (0-4 goals per team max). Fixtures:\n',
+    `You must predict exactly ${ids.length} FIFA World Cup 2026 group stage matches.`,
+    `The ONLY valid fixture IDs are: ${ids.join(', ')}`,
+    'Reply ONLY with a JSON object using ONLY those exact IDs as keys, each with {"h": homeGoals, "a": awayGoals}.',
+    'Do NOT invent new IDs. Do NOT include any other text. Scores must be 0-5 per team.\n',
+    'Fixtures to predict:',
   ]
   GROUP_LABELS.forEach(g => {
-    lines.push(`Group ${g}:`)
-    FIXTURES.filter(f => f.group === g && f.homeScore === null).forEach(f => {
+    lines.push(`\nGroup ${g}:`)
+    UPCOMING.filter(f => f.group === g).forEach(f => {
       const ht = TEAMS[f.home], at = TEAMS[f.away]
-      lines.push(`  ${f.id}: ${ht.name}${ht.host ? ' (host)' : ''} [str:${ht.strength}] vs ${at.name} [str:${at.strength}] — ${f.date}`)
+      lines.push(`  "${f.id}": ${ht.name}${ht.host ? '(host)' : ''} vs ${at.name}`)
     })
   })
-  lines.push('\nRespond with ONLY the JSON object, no explanation, no markdown.')
+  lines.push('\nReturn ONLY the JSON object with exactly these IDs.')
   return lines.join('\n')
 }
 
@@ -45,25 +49,33 @@ export default function AIPredictions({ onApply }) {
       const raw = await res.text()
       let data
       try { data = JSON.parse(raw) } catch {
-        throw new Error('Server returned invalid response: ' + raw.slice(0, 200))
+        throw new Error('Server error: ' + raw.slice(0, 200))
       }
-
       if (data.error) throw new Error(data.error + (data.detail ? ': ' + data.detail.slice(0, 200) : ''))
 
       const text = data.content?.[0]?.text || ''
       if (!text) throw new Error('Empty response from AI')
+
       const clean = text.replace(/```json|```/g, '').trim()
       let parsed
       try { parsed = JSON.parse(clean) } catch {
-        throw new Error('AI returned invalid JSON: ' + clean.slice(0, 200))
+        throw new Error('AI returned invalid JSON: ' + clean.slice(0, 150))
       }
 
-      setPreds(parsed)
+      // Strip any keys not in our valid ID set
+      const valid = Object.fromEntries(
+        Object.entries(parsed).filter(([id]) => VALID_IDS.has(id))
+      )
+
+      const count = Object.keys(valid).length
+      if (count < 40) throw new Error(`AI only returned ${count} predictions — try re-running`)
+
+      setPreds(valid)
       setStatus('done')
 
-      // Build display by group
+      // Build display grouped by group
       const groups = {}
-      Object.entries(parsed).forEach(([id, score]) => {
+      Object.entries(valid).forEach(([id, score]) => {
         const f = FIXTURES.find(x => x.id === id)
         if (!f) return
         if (!groups[f.group]) groups[f.group] = []
@@ -89,7 +101,7 @@ export default function AIPredictions({ onApply }) {
     <div className={styles.wrap}>
       <div className={styles.pageHeader}>
         <h2>🤖 AI Predictions</h2>
-        <p>Claude analyses all 48 group stage fixtures and predicts every score</p>
+        <p>Claude analyses all {UPCOMING.length} group stage fixtures and predicts every score</p>
       </div>
 
       {status === 'idle' && (
@@ -97,7 +109,7 @@ export default function AIPredictions({ onApply }) {
           <div className={styles.startIcon}>🧠</div>
           <div className={styles.startTitle}>Get Claude's predictions</div>
           <div className={styles.startDesc}>
-            Analyses all 12 groups, 48 matches — factoring in team strength, host advantage, and tournament history.
+            Analyses all 12 groups, {UPCOMING.length} matches — factoring in team strength, host advantage, and tournament history.
           </div>
           <button className={styles.runBtn} onClick={runAI}>Generate AI Predictions</button>
         </div>
@@ -106,7 +118,7 @@ export default function AIPredictions({ onApply }) {
       {status === 'loading' && (
         <div className={styles.loadingCard}>
           <div className={styles.spinner} />
-          <div className={styles.loadingText}>Analysing all 48 matches…</div>
+          <div className={styles.loadingText}>Analysing all {UPCOMING.length} matches…</div>
           <div className={styles.loadingSub}>Claude is predicting every group stage fixture</div>
         </div>
       )}
@@ -121,7 +133,7 @@ export default function AIPredictions({ onApply }) {
       {status === 'done' && reasoning && (
         <>
           <div className={styles.doneBar}>
-            <span>✅ {Object.keys(predictions).length} matches predicted</span>
+            <span>✅ {Object.keys(predictions).length}/{UPCOMING.length} matches predicted</span>
             <div className={styles.doneActions}>
               <button className={styles.applyBtn} onClick={() => onApply(predictions)}>Apply to my predictions</button>
               <button className={styles.rerunBtn} onClick={runAI}>Re-run</button>
