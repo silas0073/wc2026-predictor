@@ -169,11 +169,37 @@ export default function Bracket({ predictions }) {
           <h2>Knockout Bracket</h2>
           <p>Tap a team to advance — or use ⚡ Auto-fill</p>
         </div>
-        {Object.keys(picks).length > 0 && (
-          <button className={styles.clearBtn} onClick={() => { setPicks({}); localStorage.removeItem(BRACKET_KEY) }}>
-            Reset
-          </button>
-        )}
+        <div className={styles.headerBtns}>
+          <button className={styles.autoAllBtn} onClick={() => {
+            let next = { ...picks }
+            const allRounds = [
+              { key: 'r32', matches: r32 },
+              { key: 'r16', matches: r16 },
+              { key: 'qf',  matches: qf  },
+              { key: 'sf',  matches: sf  },
+              { key: 'final', matches: final },
+            ]
+            allRounds.forEach(({ key, matches }) => {
+              matches.forEach(m => {
+                if (!next[`${key}.${m.id}`]) {
+                  if (m.home && m.away) {
+                    const sh = TEAMS[m.home]?.strength || 5
+                    const sa = TEAMS[m.away]?.strength || 5
+                    next[`${key}.${m.id}`] = sh >= sa ? m.home : m.away
+                  } else if (m.home && !m.away) {
+                    next[`${key}.${m.id}`] = m.home
+                  }
+                }
+              })
+            })
+            setPicks(next)
+          }}>⚡ Auto-fill all</button>
+          {Object.keys(picks).length > 0 && (
+            <button className={styles.clearBtn} onClick={() => { setPicks({}); localStorage.removeItem(BRACKET_KEY) }}>
+              Reset
+            </button>
+          )}
+        </div>
       </div>
 
       {champion && TEAMS[champion] && (
