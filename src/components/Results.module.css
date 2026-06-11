@@ -37,3 +37,8 @@
 .s { font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--muted); min-width:18px; text-align:center; }
 .sWin { color:var(--green); }
 .sdash { color:var(--muted2); font-size:1rem; }
+
+.predBelow { display:block; font-size:.6rem; font-family:var(--mono); color:var(--muted2); text-align:center; margin-top:2px; }
+.predExact  { color:var(--green); font-weight:700; }
+.predResult { color:var(--gold); }
+.predWrong  { color:var(--red); }
