@@ -5,6 +5,7 @@ import Results from './components/Results.jsx'
 import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
+import GoldenBoot from './components/GoldenBoot.jsx'
 import { FIXTURES } from './data.js'
 import styles from './App.module.css'
 
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'schedule',  label: 'Schedule',  icon: '📅' },
   { id: 'results',   label: 'Results',   icon: '🏁' },
   { id: 'table',     label: 'Standings', icon: '📊' },
+  { id: 'golden',    label: 'Top Scorers', icon: '🥾' },
 ]
 
 export default function App() {
@@ -119,6 +121,7 @@ export default function App() {
           {tab === 'table'     && <TableView predictions={predictions} />}
           {tab === 'bracket'   && <Bracket predictions={predictions} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
+          {tab === 'golden'    && <GoldenBoot />}
         </div>
       </main>
     </div>
