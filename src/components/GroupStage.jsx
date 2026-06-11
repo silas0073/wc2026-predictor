@@ -46,7 +46,7 @@ function StandingsTable({ group, predictions }) {
   )
 }
 
-export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad }) {
+export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace }) {
   const [activeGroup, setActiveGroup] = useState('A')
 
   const fixtures = FIXTURES.filter(f => f.group === activeGroup)
@@ -60,7 +60,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
   const clearGroup = () => {
     const cleared = { ...predictions }
     upcoming.forEach(f => delete cleared[f.id])
-    onBulkPredict(cleared)
+    onReplace(cleared)
   }
 
   return (
