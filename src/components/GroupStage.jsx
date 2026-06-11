@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import SavedPredictions from './SavedPredictions.jsx'
 import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { groupStandings, autoFillGroup, teamObj, formatDate } from '../utils.js'
+import { matchOdds, formLabel, toDecimalOdds } from '../odds.js'
 import styles from './GroupStage.module.css'
 
 function ScoreInput({ value, onChange, color }) {
@@ -45,6 +46,33 @@ function StandingsTable({ group, predictions }) {
     </table>
   )
 }
+
+function OddsBar({ homeCode, awayCode }) {
+  const { homeWin, draw, awayWin, fav, favLabel } = matchOdds(homeCode, awayCode)
+  return (
+    <div className={styles.oddsWrap}>
+      <div className={styles.oddsBar}>
+        <div className={styles.oddsHome} style={{ width: homeWin + '%' }} />
+        <div className={styles.oddsDraw} style={{ width: draw + '%' }} />
+        <div className={styles.oddsAway} style={{ width: awayWin + '%' }} />
+      </div>
+      <div className={styles.oddsLabels}>
+        <span className={styles.oddsNum} style={{ color: fav==='home' ? 'var(--green)' : 'var(--muted)' }}>
+          {homeWin}%
+        </span>
+        <span className={`${styles.oddsFav} ${fav==='even' ? styles.oddsFavEven : ''}`}>{favLabel}</span>
+        <span className={styles.oddsNum} style={{ color: fav==='away' ? 'var(--green)' : 'var(--muted)' }}>
+          {awayWin}%
+        </span>
+      </div>
+      <div className={styles.formRow}>
+        <span className={styles.formDots} title="Recent form">{formLabel(homeCode)}</span>
+        <span className={styles.formDots} title="Recent form">{formLabel(awayCode)}</span>
+      </div>
+    </div>
+  )
+}
+
 
 export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace }) {
   const [activeGroup, setActiveGroup] = useState('A')
