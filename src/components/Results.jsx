@@ -3,7 +3,7 @@ import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-export default function Results() {
+export default function Results({ predictions = {} }) {
   const [filterGroup, setFilterGroup] = useState('ALL')
 
   const played = FIXTURES.filter(f => f.homeScore !== null)
@@ -54,6 +54,8 @@ export default function Results() {
             const away = teamObj(f.away)
             const hw = f.homeScore > f.awayScore
             const aw = f.awayScore > f.homeScore
+            const pred = predictions[f.id]
+            const hasPred = pred?.h != null
 
             return (
               <div key={f.id} className={styles.row}>
@@ -67,6 +69,17 @@ export default function Results() {
                     <span className={`${styles.s} ${hw ? styles.sWin : ''}`}>{f.homeScore}</span>
                     <span className={styles.sdash}>–</span>
                     <span className={`${styles.s} ${aw ? styles.sWin : ''}`}>{f.awayScore}</span>
+                    {hasPred && (
+                      <span className={styles.predBelow}>
+                        {pred.h}–{pred.a}
+                        {pred.h === f.homeScore && pred.a === f.awayScore
+                          ? <span className={styles.predExact}> ✓</span>
+                          : (pred.h > pred.a) === hw || (pred.h === pred.a && !hw && !aw)
+                            ? <span className={styles.predResult}> ~</span>
+                            : <span className={styles.predWrong}> ✗</span>
+                        }
+                      </span>
+                    )}
                   </div>
                   <div className={`${styles.team} ${styles.teamR}`}>
                     <span className={`${styles.name} ${aw ? styles.winner : ''}`}>{away.name}</span>
