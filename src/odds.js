@@ -68,25 +68,29 @@ export function formLabel(code) {
 // Calculate win probabilities based on strength + form + home advantage
 export function matchOdds(homeCode, awayCode) {
   const ht = TEAMS[homeCode], at = TEAMS[awayCode]
-  if (!ht || !at) return { homeWin: 33, draw: 33, awayWin: 34, fav: null, favLabel: 'Even' }
+  if (!ht || !at) return { homeWin: 38, draw: 24, awayWin: 38, fav: 'even', favLabel: 'Even' }
 
-  const homeStr = ht.strength + (ht.host ? 0.5 : 0) + formScore(homeCode) * 1.5
-  const awayStr = at.strength + formScore(awayCode) * 1.5
+  // Strength 1-10 scale, amplified with power to spread weak vs strong
+  const homeStr = Math.pow(ht.strength + (ht.host ? 0.6 : 0) + formScore(homeCode) * 2, 2)
+  const awayStr = Math.pow(at.strength + formScore(awayCode) * 2, 2)
 
-  const total = homeStr + awayStr + 4 // draw factor
+  // Draw factor is smaller and shrinks when there's a big gap
+  const gap = Math.abs(homeStr - awayStr)
+  const drawFactor = Math.max(8, 22 - gap * 0.15) // ~22% for even, drops to ~8% for big mismatches
+
+  const total = homeStr + awayStr + drawFactor
   const rawHome = (homeStr / total) * 100
   const rawAway = (awayStr / total) * 100
-  const rawDraw = 100 - rawHome - rawAway
+  const draw    = Math.round((drawFactor / total) * 100)
 
-  const homeWin = Math.round(rawHome)
-  const awayWin = Math.round(rawAway)
-  const draw    = Math.round(rawDraw)
+  // Split remaining between home and away
+  const remaining = 100 - draw
+  const homeWin = Math.round((rawHome / (rawHome + rawAway)) * remaining)
+  const awayWin = remaining - homeWin
 
-  let fav = null, favLabel = 'Even'
-  const maxGap = Math.max(homeWin, awayWin) - Math.min(homeWin, awayWin)
-  if (homeWin > awayWin + 8) { fav = 'home'; favLabel = `${ht.name} fav` }
-  else if (awayWin > homeWin + 8) { fav = 'away'; favLabel = `${at.name} fav` }
-  else { fav = 'even'; favLabel = 'Even match' }
+  let fav = 'even', favLabel = 'Even match'
+  if (homeWin > awayWin + 10) { fav = 'home'; favLabel = `${ht.name} fav` }
+  else if (awayWin > homeWin + 10) { fav = 'away'; favLabel = `${at.name} fav` }
 
   return { homeWin, draw, awayWin, fav, favLabel }
 }
