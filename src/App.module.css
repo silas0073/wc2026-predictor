@@ -1,12 +1,11 @@
 .app { min-height:100vh; display:flex; flex-direction:column; }
 
 .banner {
-  position:sticky; top:0; z-index:101;
   line-height:0;
 }
 .header {
   background:var(--bg2); border-bottom:1px solid var(--border);
-  position:sticky; top:72px; z-index:100;
+  position:sticky; top:0; z-index:100;
 }
 .headerInner {
   max-width:1100px; margin:0 auto; padding:0 12px;
@@ -34,7 +33,7 @@
 /* NAV */
 .nav {
   background:var(--bg); border-bottom:1px solid var(--border);
-  position:sticky; top:122px; z-index:99;
+  position:sticky; top:50px; z-index:99;
   overflow-x:auto; overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
