@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import SavedPredictions from './SavedPredictions.jsx'
 import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { groupStandings, autoFillGroup, teamObj, formatDate } from '../utils.js'
 import styles from './GroupStage.module.css'
@@ -45,7 +46,7 @@ function StandingsTable({ group, predictions }) {
   )
 }
 
-export default function GroupStage({ predictions, onPredict, onBulkPredict }) {
+export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad }) {
   const [activeGroup, setActiveGroup] = useState('A')
 
   const fixtures = FIXTURES.filter(f => f.group === activeGroup)
@@ -68,6 +69,8 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict }) {
         <h2>Group Stage Predictor</h2>
         <p>Pick scores for each match — standings update live</p>
       </div>
+
+      <SavedPredictions predictions={predictions} onLoad={onLoad} />
 
       <div className={styles.groupTabs}>
         {GROUP_LABELS.map(g => {
