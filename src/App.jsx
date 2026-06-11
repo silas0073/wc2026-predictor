@@ -6,6 +6,7 @@ import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
 import GoldenBoot from './components/GoldenBoot.jsx'
+import Banner from './components/Banner.jsx'
 import { FIXTURES } from './data.js'
 import styles from './App.module.css'
 
@@ -75,6 +76,7 @@ export default function App() {
 
   return (
     <div className={styles.app}>
+      <Banner />
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.brand}>
