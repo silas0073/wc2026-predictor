@@ -63,7 +63,7 @@ export default function TableView({ predictions }) {
       </div>
 
       <div className={`${styles.grid} ${view !== 'all' ? styles.single : ''}`}>
-        {groups.map(g => <GroupTable key={g} group={g} predictions={predictions} />)}
+        {groups.map(g => <GroupTable key={g} group={g} predictions={{}} />)}
       </div>
 
       <div className={styles.legend}>
