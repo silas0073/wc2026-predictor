@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { TEAMS } from '../data.js'
+import { matchOdds, formLabel } from '../odds.js'
 import { groupStandings } from '../utils.js'
 import { GROUP_LABELS } from '../data.js'
 import styles from './Bracket.module.css'
@@ -96,6 +97,27 @@ function MatchCard({ match, winner, onPick, matchNum }) {
       <TeamBtn code={home} isWinner={winner === home} onClick={() => canPick && onPick(home)} note={!home ? note : null} />
       <div className={styles.matchVs}>vs</div>
       <TeamBtn code={away} isWinner={winner === away} onClick={() => canPick && onPick(away)} note={!away ? note : null} />
+      {canPick && !winner && (() => {
+        const o = matchOdds(home, away)
+        return (
+          <div className={styles.oddsWrap}>
+            <div className={styles.oddsBar}>
+              <div className={styles.oddsHome} style={{width: o.homeWin+'%'}} />
+              <div className={styles.oddsDraw} style={{width: o.draw+'%'}} />
+              <div className={styles.oddsAway} style={{width: o.awayWin+'%'}} />
+            </div>
+            <div className={styles.oddsRow}>
+              <span className={styles.oddsNum}>{o.homeWin}%</span>
+              <span className={o.fav==='even' ? styles.oddsTie : styles.oddsFav}>{o.favLabel}</span>
+              <span className={styles.oddsNum}>{o.awayWin}%</span>
+            </div>
+            <div className={styles.formRow}>
+              <span>{formLabel(home)}</span>
+              <span>{formLabel(away)}</span>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
