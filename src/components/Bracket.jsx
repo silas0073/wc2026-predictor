@@ -99,8 +99,18 @@ function MatchCard({ match, winner, onPick, matchNum }) {
       <TeamBtn code={away} isWinner={winner === away} onClick={() => canPick && onPick(away)} note={!away ? note : null} />
       {canPick && !winner && (() => {
         const o = matchOdds(home, away)
+        const ht = TEAMS[home], at = TEAMS[away]
         return (
           <div className={styles.oddsWrap}>
+            <div className={styles.oddsTeams}>
+              <span className={`${styles.oddsTeamLabel} ${o.fav==='home' ? styles.oddsFavTeam : ''}`}>
+                {ht?.flag} {home}{o.fav==='home' ? ' ⭐' : ''}
+              </span>
+              <span className={styles.oddsCentre}>{o.draw}% draw</span>
+              <span className={`${styles.oddsTeamLabel} ${o.fav==='away' ? styles.oddsFavTeam : ''}`}>
+                {o.fav==='away' ? '⭐ ' : ''}{away} {at?.flag}
+              </span>
+            </div>
             <div className={styles.oddsBar}>
               <div className={styles.oddsHome} style={{width: o.homeWin+'%'}} />
               <div className={styles.oddsDraw} style={{width: o.draw+'%'}} />
@@ -108,11 +118,11 @@ function MatchCard({ match, winner, onPick, matchNum }) {
             </div>
             <div className={styles.oddsRow}>
               <span className={styles.oddsNum}>{o.homeWin}%</span>
-              <span className={o.fav==='even' ? styles.oddsTie : styles.oddsFav}>{o.favLabel}</span>
               <span className={styles.oddsNum}>{o.awayWin}%</span>
             </div>
             <div className={styles.formRow}>
               <span>{formLabel(home)}</span>
+              <span className={styles.formMid}>form</span>
               <span>{formLabel(away)}</span>
             </div>
           </div>
