@@ -1,0 +1,53 @@
+.wrap { margin-bottom:20px; }
+
+.saveRow { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+.input {
+  flex:1; min-width:160px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:8px; padding:8px 12px; color:var(--white); font-size:.82rem;
+  font-family:var(--font); outline:none; transition:border-color .15s;
+}
+.input:focus { border-color:rgba(245,197,24,.4); }
+.input::placeholder { color:var(--muted2); }
+
+.saveBtn {
+  white-space:nowrap; padding:8px 14px; background:rgba(245,197,24,.12);
+  border:1px solid rgba(245,197,24,.3); border-radius:8px; color:var(--gold);
+  font-size:.78rem; font-weight:700; transition:all .15s;
+}
+.saveBtn:hover:not(:disabled) { background:rgba(245,197,24,.2); }
+.saveBtn:disabled { opacity:.4; cursor:not-allowed; }
+
+.loadBtn {
+  white-space:nowrap; padding:8px 14px; background:var(--bg2);
+  border:1px solid var(--border); border-radius:8px; color:var(--muted);
+  font-size:.78rem; font-weight:600; transition:all .15s;
+}
+.loadBtn:hover, .loadBtnOpen { color:var(--white); border-color:rgba(107,128,153,.4); }
+
+.list {
+  margin-top:10px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; overflow:hidden;
+}
+
+.item {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:11px 14px; border-bottom:1px solid var(--border);
+}
+.item:last-child { border-bottom:none; }
+
+.itemInfo { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.itemName { font-size:.85rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.itemMeta { font-size:.68rem; color:var(--muted); font-family:var(--mono); }
+
+.itemActions { display:flex; gap:6px; flex-shrink:0; }
+.loadItemBtn {
+  padding:5px 12px; background:var(--gold); color:#111; font-weight:700;
+  font-size:.72rem; border:none; border-radius:6px; transition:opacity .15s;
+}
+.loadItemBtn:hover { opacity:.85; }
+.delBtn {
+  padding:5px 8px; background:none; border:1px solid var(--border);
+  border-radius:6px; color:var(--muted2); font-size:.72rem; transition:all .15s;
+}
+.delBtn:hover { color:var(--red); border-color:var(--red); }
