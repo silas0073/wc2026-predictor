@@ -156,3 +156,16 @@
   font-size:.7rem;
 }
 .formDots { letter-spacing:1px; }
+
+.oddsTeams {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:.65rem; margin-bottom:4px;
+}
+.oddsTeamLabel {
+  font-family:var(--mono); font-weight:600; color:var(--muted);
+  display:flex; align-items:center; gap:3px;
+}
+.oddsTeamRight { text-align:right; }
+.oddsFavTeam { color:var(--green); }
+.oddsCentre { font-size:.6rem; color:var(--muted2); }
+.formLabel { font-size:.58rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
