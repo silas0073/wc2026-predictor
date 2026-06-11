@@ -177,6 +177,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
                           <span className={styles.flag}>{away.flag}</span>
                         </div>
                       </div>
+                      {!isPlayed && <OddsBar homeCode={f.home} awayCode={f.away} />}
                     </div>
                   )
                 })}
