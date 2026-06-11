@@ -108,3 +108,20 @@
   font-size:.58rem; color:var(--muted2); font-weight:400;
   font-family:var(--mono); letter-spacing:.04em;
 }
+
+.oddsWrap { margin-top:8px; }
+.oddsBar {
+  display:flex; height:3px; border-radius:2px; overflow:hidden;
+  background:var(--bg4); margin-bottom:4px;
+}
+.oddsHome { background:var(--green); }
+.oddsDraw  { background:var(--muted2); }
+.oddsAway  { background:var(--blue); }
+.oddsRow {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:.62rem; margin-bottom:3px;
+}
+.oddsNum { font-family:var(--mono); font-weight:600; color:var(--muted); }
+.oddsFav { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--green); }
+.oddsTie { font-size:.6rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
+.formRow { display:flex; justify-content:space-between; font-size:.68rem; letter-spacing:1px; }
