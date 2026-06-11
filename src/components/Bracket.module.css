@@ -125,3 +125,9 @@
 .oddsFav { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--green); }
 .oddsTie { font-size:.6rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
 .formRow { display:flex; justify-content:space-between; font-size:.68rem; letter-spacing:1px; }
+
+.oddsTeams { display:flex; justify-content:space-between; align-items:center; font-size:.62rem; margin-bottom:4px; }
+.oddsTeamLabel { font-family:var(--mono); font-weight:600; color:var(--muted); display:flex; align-items:center; gap:2px; }
+.oddsFavTeam { color:var(--green); }
+.oddsCentre { font-size:.58rem; color:var(--muted2); }
+.formMid { font-size:.55rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
