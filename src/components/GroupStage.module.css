@@ -129,3 +129,30 @@
   .teamName { max-width:70px; }
   .cardRow { gap:4px; }
 }
+
+/* Odds bar */
+.oddsWrap { margin-top:10px; }
+.oddsBar {
+  display:flex; height:4px; border-radius:2px; overflow:hidden;
+  background:var(--bg4); margin-bottom:5px;
+}
+.oddsHome { background:var(--green); transition:width .3s; }
+.oddsDraw  { background:var(--muted2); transition:width .3s; }
+.oddsAway  { background:var(--blue); transition:width .3s; }
+
+.oddsLabels {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.65rem; margin-bottom:5px;
+}
+.oddsNum { font-family:var(--mono); font-weight:600; }
+.oddsFav {
+  font-size:.62rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--green);
+}
+.oddsFavEven { color:var(--muted2); }
+
+.formRow {
+  display:flex; justify-content:space-between;
+  font-size:.7rem;
+}
+.formDots { letter-spacing:1px; }
