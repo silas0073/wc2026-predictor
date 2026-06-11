@@ -6,15 +6,36 @@ export function formatDate(d) {
   })
 }
 
+// Format UTC kickoff as AEST (UTC+10, no DST in June)
+export function formatAEST(utcStr) {
+  if (!utcStr) return ''
+  const d = new Date(utcStr)
+  // AEST = UTC+10
+  const aest = new Date(d.getTime() + 10 * 60 * 60 * 1000)
+  const h = aest.getUTCHours()
+  const m = aest.getUTCMinutes()
+  const ampm = h >= 12 ? 'pm' : 'am'
+  const h12 = h % 12 || 12
+  return `${h12}${m ? ':' + String(m).padStart(2,'0') : ''}${ampm} AEST`
+}
+
+// Format UTC kickoff as local date label for AEST
+export function formatAESTDate(utcStr) {
+  if (!utcStr) return ''
+  const d = new Date(utcStr)
+  const aest = new Date(d.getTime() + 10 * 60 * 60 * 1000)
+  return aest.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+}
+
 export function teamObj(code) { return { code, ...TEAMS[code] } }
 
-// Build standings for a single group given a predictions map {fixtureId: {h,a}}
 export function groupStandings(groupLetter, predictions = {}) {
   const teamCodes = GROUPS[groupLetter]
   const rows = Object.fromEntries(teamCodes.map(c => [c, { P:0,W:0,D:0,L:0,GF:0,GA:0,Pts:0 }]))
 
   const fixtures = FIXTURES.filter(f => f.group === groupLetter)
   fixtures.forEach(f => {
+    // Use real score if available, else prediction
     const hs = f.homeScore !== null ? f.homeScore : predictions[f.id]?.h
     const as = f.awayScore !== null ? f.awayScore : predictions[f.id]?.a
     if (hs === undefined || hs === null || as === undefined || as === null) return
@@ -32,7 +53,6 @@ export function groupStandings(groupLetter, predictions = {}) {
     .sort((a,b) => b.Pts-a.Pts || b.GD-a.GD || b.GF-a.GF || a.team.name.localeCompare(b.team.name))
 }
 
-// Simulate a single match result based on strength ratings (for auto-fill)
 export function simulateScore(homeCode, awayCode) {
   const h = TEAMS[homeCode].strength + (TEAMS[homeCode].host ? 0.4 : 0)
   const a = TEAMS[awayCode].strength
@@ -48,11 +68,4 @@ export function autoFillGroup(groupLetter, existing = {}) {
     if (!result[f.id]) result[f.id] = simulateScore(f.home, f.away)
   })
   return result
-}
-
-export function allGroupsComplete(predictions) {
-  return FIXTURES.filter(f => f.homeScore === null).every(f => {
-    const p = predictions[f.id]
-    return p && p.h !== undefined && p.a !== undefined
-  })
 }
