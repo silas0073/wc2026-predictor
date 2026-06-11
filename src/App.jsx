@@ -54,6 +54,12 @@ export default function App() {
     setPredictions(prev => ({ ...prev, ...clean }))
   }, [])
 
+  // Replace predictions entirely (used by group clear)
+  const replacePredictions = useCallback((map) => {
+    const clean = Object.fromEntries(Object.entries(map).filter(([id]) => VALID_IDS.has(id)))
+    setPredictions(clean)
+  }, [])
+
   // Load a saved set — replaces all predictions AND clears bracket picks
   // so bracket regenerates fresh from new group standings
   const loadPredictions = useCallback((map) => {
@@ -117,7 +123,7 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} />}
+          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} />}
           {tab === 'schedule'  && <Schedule predictions={predictions} />}
           {tab === 'results'   && <Results predictions={predictions} />}
           {tab === 'table'     && <TableView predictions={predictions} />}
