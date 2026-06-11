@@ -8,41 +8,46 @@
   max-width:1100px; margin:0 auto; padding:0 12px;
   height:50px; display:flex; align-items:center; justify-content:space-between;
 }
-.brand { display:flex; align-items:center; gap:8px; }
-.brandBall { font-size:1.2rem; }
-.brandName { font-size:.9rem; font-weight:700; letter-spacing:-0.01em; line-height:1.2; }
-.brandSub  { font-size:0.6rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.04em; }
-.headerRight { display:flex; align-items:center; gap:7px; }
+.brand { display:flex; align-items:center; gap:8px; min-width:0; }
+.brandBall { font-size:1.2rem; flex-shrink:0; }
+.brandName { font-size:.9rem; font-weight:700; letter-spacing:-0.01em; line-height:1.2; white-space:nowrap; }
+.brandSub  { font-size:0.6rem; color:var(--muted); font-family:var(--mono); letter-spacing:0.04em; white-space:nowrap; }
+.headerRight { display:flex; align-items:center; gap:7px; flex-shrink:0; }
 .predPill {
   font-size:0.7rem; color:var(--gold); background:rgba(245,197,24,0.1);
   border:1px solid rgba(245,197,24,0.25); border-radius:20px; padding:3px 8px; font-weight:600;
+  white-space:nowrap;
 }
 .predNum { font-family:var(--mono); }
 .savedDot { margin-left:2px; font-size:.65rem; }
 .clearBtn {
   font-size:0.68rem; color:var(--muted); background:none;
-  border:1px solid var(--border); border-radius:6px; padding:3px 7px; transition:all .15s;
+  border:1px solid var(--border); border-radius:6px; padding:3px 7px;
+  transition:all .15s; white-space:nowrap;
 }
 .clearBtn:hover { color:var(--red); border-color:var(--red); }
 
-/* Nav - always scrollable, never clips */
+/* NAV — key: width:100% on outer, overflow-x on outer, inner is flex with no wrapping */
 .nav {
   background:var(--bg); border-bottom:1px solid var(--border);
   position:sticky; top:50px; z-index:99;
-  overflow-x:auto; overflow-y:hidden;
+  width:100%; overflow-x:scroll; overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
 }
 .nav::-webkit-scrollbar { display:none; }
+/* navInner must NOT be constrained to max-width — let it be as wide as needed */
 .navInner {
-  display:inline-flex; min-width:100%;
+  display:flex; flex-wrap:nowrap;
+  width:max-content;
   padding:0 4px;
 }
 .navBtn {
-  display:flex; align-items:center; gap:4px; flex-shrink:0;
-  padding:10px 11px;
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:4px;
+  padding:10px 12px;
   background:none; border:none; border-bottom:2px solid transparent;
-  color:var(--muted); font-size:0.75rem; font-weight:600;
+  color:var(--muted); font-size:0.76rem; font-weight:600;
   transition:all .15s; white-space:nowrap; cursor:pointer;
 }
 .navBtn:hover { color:var(--white); }
@@ -52,7 +57,7 @@
 .main { flex:1; }
 .content { max-width:1100px; margin:0 auto; padding:14px 12px 60px; }
 
-@media(max-width:480px){
+@media(max-width:500px){
   .brandSub { display:none; }
   .navBtn { padding:10px 9px; font-size:0.7rem; }
   .navIcon { display:none; }
