@@ -61,7 +61,7 @@ export const GROUPS = {
 // kickoff = UTC ISO datetime string
 export const FIXTURES = [
   // GROUP A
-  { id:'A1', group:'A', md:1, date:'2026-06-11', kickoff:'2026-06-11T19:00Z', home:'MEX', away:'RSA', venue:'Estadio Azteca, Mexico City',       homeScore:null, awayScore:null },
+  { id:'A1', group:'A', md:1, date:'2026-06-11', kickoff:'2026-06-11T19:00Z', home:'MEX', away:'RSA', venue:'Estadio Azteca, Mexico City',       homeScore:2, awayScore:0 },
   { id:'A2', group:'A', md:1, date:'2026-06-12', kickoff:'2026-06-12T02:00Z', home:'KOR', away:'CZE', venue:'Estadio Akron, Guadalajara',          homeScore:null, awayScore:null },
   { id:'A3', group:'A', md:2, date:'2026-06-18', kickoff:'2026-06-18T16:00Z', home:'CZE', away:'RSA', venue:'Mercedes-Benz Stadium, Atlanta',      homeScore:null, awayScore:null },
   { id:'A4', group:'A', md:2, date:'2026-06-19', kickoff:'2026-06-19T01:00Z', home:'MEX', away:'KOR', venue:'Estadio Akron, Guadalajara',           homeScore:null, awayScore:null },
