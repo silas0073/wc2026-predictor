@@ -72,7 +72,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
 
       <SavedPredictions predictions={predictions} onLoad={onLoad} />
 
-      <div className={styles.groupTabs}>
+      <div className={styles.groupTabs}><div className={styles.groupTabsInner}>
         {GROUP_LABELS.map(g => {
           const done = FIXTURES.filter(f => f.group===g && f.homeScore===null)
             .filter(f => predictions[f.id] !== undefined).length
@@ -88,7 +88,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
             </button>
           )
         })}
-      </div>
+      </div></div>
 
       <div className={styles.layout}>
         <div className={styles.fixturesCol}>
