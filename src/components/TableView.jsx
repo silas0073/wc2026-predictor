@@ -11,7 +11,7 @@ function GroupTable({ group, predictions }) {
     <div className={styles.groupBlock}>
       <div className={styles.groupHeader}>
         <span className={styles.groupLabel}>Group {group}</span>
-        {hasPred && <span className={styles.livePill}><span className={styles.dot} />live</span>}
+        {hasPred && <span className={styles.livePill}><span className={styles.dot} />updated</span>}
       </div>
       <table className={styles.table}>
         <thead>
@@ -52,7 +52,7 @@ export default function TableView({ predictions }) {
     <div className={styles.wrap}>
       <div className={styles.pageHeader}>
         <h2>Group Standings</h2>
-        <p>Tables update live as you add predictions</p>
+        <p>Real results + your predictions for unplayed matches</p>
       </div>
 
       <div className={styles.filters}>
