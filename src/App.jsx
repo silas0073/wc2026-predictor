@@ -82,7 +82,8 @@ export default function App() {
 
   return (
     <div className={styles.app}>
-      <div className={styles.banner}><Banner /></div>
+      <div className={styles.stickyTop}>
+      <Banner />
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.brand}>
@@ -105,7 +106,6 @@ export default function App() {
           </div>
         </div>
       </header>
-
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           {TABS.map(t => (
@@ -120,6 +120,7 @@ export default function App() {
           ))}
         </div>
       </nav>
+      </div>
 
       <main className={styles.main}>
         <div className={styles.content}>
