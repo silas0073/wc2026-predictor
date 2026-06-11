@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import SavedPredictions from './SavedPredictions.jsx'
 import { FIXTURES, GROUP_LABELS } from '../data.js'
+import { TEAMS } from '../data.js'
 import { groupStandings, autoFillGroup, teamObj, formatDate } from '../utils.js'
 import { matchOdds, formLabel, toDecimalOdds } from '../odds.js'
 import styles from './GroupStage.module.css'
@@ -49,25 +50,32 @@ function StandingsTable({ group, predictions }) {
 
 function OddsBar({ homeCode, awayCode }) {
   const { homeWin, draw, awayWin, fav, favLabel } = matchOdds(homeCode, awayCode)
+  const ht = TEAMS[homeCode], at = TEAMS[awayCode]
   return (
     <div className={styles.oddsWrap}>
+      <div className={styles.oddsTeams}>
+        <span className={styles.oddsTeamLabel} style={{ color: fav==='home' ? 'var(--green)' : 'var(--muted)' }}>
+          {ht?.name} {fav==='home' && '★'}
+        </span>
+        <span className={styles.oddsDraw2}>{draw}% draw</span>
+        <span className={styles.oddsTeamLabel} style={{ color: fav==='away' ? 'var(--green)' : 'var(--muted)', textAlign:'right' }}>
+          {fav==='away' && '★ '}{at?.name}
+        </span>
+      </div>
       <div className={styles.oddsBar}>
         <div className={styles.oddsHome} style={{ width: homeWin + '%' }} />
         <div className={styles.oddsDraw} style={{ width: draw + '%' }} />
         <div className={styles.oddsAway} style={{ width: awayWin + '%' }} />
       </div>
       <div className={styles.oddsLabels}>
-        <span className={styles.oddsNum} style={{ color: fav==='home' ? 'var(--green)' : 'var(--muted)' }}>
-          {homeWin}%
-        </span>
-        <span className={`${styles.oddsFav} ${fav==='even' ? styles.oddsFavEven : ''}`}>{favLabel}</span>
-        <span className={styles.oddsNum} style={{ color: fav==='away' ? 'var(--green)' : 'var(--muted)' }}>
-          {awayWin}%
-        </span>
+        <span className={styles.oddsNum} style={{ color: fav==='home' ? 'var(--green)' : 'var(--muted)' }}>{homeWin}%</span>
+        <span className={`${styles.oddsFav} ${fav==='even' ? styles.oddsFavEven : ''}`}>{fav==='even' ? 'Even' : 'Favourite ★'}</span>
+        <span className={styles.oddsNum} style={{ color: fav==='away' ? 'var(--green)' : 'var(--muted)' }}>{awayWin}%</span>
       </div>
       <div className={styles.formRow}>
-        <span className={styles.formDots} title="Recent form">{formLabel(homeCode)}</span>
-        <span className={styles.formDots} title="Recent form">{formLabel(awayCode)}</span>
+        <span className={styles.formDots} title="Form">{formLabel(homeCode)}</span>
+        <span className={styles.formLabel}>last 5</span>
+        <span className={styles.formDots} title="Form">{formLabel(awayCode)}</span>
       </div>
     </div>
   )
