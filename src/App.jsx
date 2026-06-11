@@ -102,7 +102,7 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} />}
+          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={bulkPredict} />}
           {tab === 'schedule'  && <Schedule predictions={predictions} />}
           {tab === 'results'   && <Results />}
           {tab === 'table'     && <TableView predictions={predictions} />}
