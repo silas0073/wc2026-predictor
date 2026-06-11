@@ -9,6 +9,7 @@ import { FIXTURES } from './data.js'
 import styles from './App.module.css'
 
 const STORAGE_KEY = 'wc2026_predictions'
+const BRACKET_KEY = 'wc2026_bracket'
 
 // Only count valid upcoming fixture IDs
 const VALID_IDS = new Set(FIXTURES.filter(f => f.homeScore === null).map(f => f.id))
@@ -50,9 +51,19 @@ export default function App() {
     setPredictions(prev => ({ ...prev, ...clean }))
   }, [])
 
+  // Load a saved set — replaces all predictions AND clears bracket picks
+  // so bracket regenerates fresh from new group standings
+  const loadPredictions = useCallback((map) => {
+    const clean = Object.fromEntries(Object.entries(map).filter(([id]) => VALID_IDS.has(id)))
+    setPredictions(clean)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean))
+    localStorage.removeItem(BRACKET_KEY)
+  }, [])
+
   const clearAll = useCallback(() => {
     setPredictions({})
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(BRACKET_KEY)
   }, [])
 
   // Count only valid predictions with actual scores
@@ -102,7 +113,7 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={bulkPredict} />}
+          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} />}
           {tab === 'schedule'  && <Schedule predictions={predictions} />}
           {tab === 'results'   && <Results />}
           {tab === 'table'     && <TableView predictions={predictions} />}
