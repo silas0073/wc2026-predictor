@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     <div className={styles.app}>
-      <Banner />
+      <div className={styles.banner}><Banner /></div>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.brand}>
