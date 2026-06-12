@@ -1,14 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TEAMS, FIXTURES } from '../data.js'
 import styles from './GoldenBoot.module.css'
 
-// Scorers data — updated as matches are played
-// Format: { name, team, goals, assists, matches }
-export const SCORERS = [
-  { name: 'Julian Quiñones', team: 'MEX', goals: 1, assists: 1, matches: 1 },
-  { name: 'Raul Jimenez',    team: 'MEX', goals: 1, assists: 0, matches: 1 },
-  { name: 'Roberto Alvarado', team: 'MEX', goals: 0, assists: 1, matches: 1 },
-]
+// Live scorer data is fetched from /api/scorers (ESPN proxy)
 
 // Pre-tournament star players to watch
 export const ONES_TO_WATCH = [
@@ -37,9 +31,31 @@ export const ONES_TO_WATCH = [
 
 export default function GoldenBoot() {
   const [tab, setTab] = useState('live')
+  const [scorers, setScorers] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const hasLiveData = SCORERS.length > 0
-  const topScorers = [...SCORERS].sort((a,b) => b.goals-a.goals || b.assists-a.assists)
+  useEffect(() => {
+    let mounted = true
+    const fetchScorers = async () => {
+      try {
+        const res = await fetch('/api/scorers')
+        const data = await res.json()
+        if (mounted) {
+          setScorers(data.scorers || [])
+          setLoading(false)
+        }
+      } catch (e) {
+        if (mounted) { setError(e.message); setLoading(false) }
+      }
+    }
+    fetchScorers()
+    const interval = setInterval(fetchScorers, 120000) // refresh every 2 min
+    return () => { mounted = false; clearInterval(interval) }
+  }, [])
+
+  const hasLiveData = scorers && scorers.length > 0
+  const topScorers = scorers ? [...scorers].sort((a,b) => b.goals-a.goals || (b.assists||0)-(a.assists||0)) : []
 
   // Group ones to watch by group
   const byGroup = ONES_TO_WATCH.reduce((acc, p) => {
@@ -68,11 +84,16 @@ export default function GoldenBoot() {
 
       {tab === 'live' && (
         <>
-          {!hasLiveData ? (
+          {loading ? (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>⏳</div>
-              <div className={styles.emptyTitle}>Tournament just kicked off</div>
-              <div className={styles.emptySub}>Scorer data will appear here after matches are played. Check back after tonight's opener!</div>
+              <div className={styles.emptyTitle}>Loading scorers…</div>
+            </div>
+          ) : !hasLiveData ? (
+            <div className={styles.empty}>
+              <div className={styles.emptyIcon}>⚽</div>
+              <div className={styles.emptyTitle}>No goals yet</div>
+              <div className={styles.emptySub}>Scorer data updates automatically from completed matches — check back once goals are scored!</div>
             </div>
           ) : (
             <div className={styles.scorerList}>
@@ -92,14 +113,12 @@ export default function GoldenBoot() {
                         <span className={styles.statNum}>{p.goals}</span>
                         <span className={styles.statLabel}>goals</span>
                       </div>
-                      <div className={styles.statSmall}>
-                        <span>{p.assists}</span>
-                        <span className={styles.statLabel}>ast</span>
-                      </div>
-                      <div className={styles.statSmall}>
-                        <span>{p.matches}</span>
-                        <span className={styles.statLabel}>gms</span>
-                      </div>
+                      {p.assists > 0 && (
+                        <div className={styles.statSmall}>
+                          <span>{p.assists}</span>
+                          <span className={styles.statLabel}>ast</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
