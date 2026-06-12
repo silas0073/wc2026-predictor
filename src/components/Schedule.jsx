@@ -54,11 +54,8 @@ export default function Schedule({ predictions }) {
             const home = teamObj(f.home)
             const away = teamObj(f.away)
             const isPlayed = f.homeScore !== null
-            const pred = predictions[f.id]
-            const hasPred = pred?.h != null
-
             return (
-              <div key={f.id} className={`${styles.row} ${isPlayed ? styles.rowPlayed : hasPred ? styles.rowPred : ''}`}>
+              <div key={f.id} className={`${styles.row} ${isPlayed ? styles.rowPlayed : ''}`}>
                 <div className={styles.rowMeta}>
                   <span className={styles.grpBadge}>Grp {f.group}</span>
                   <span className={styles.time}>
@@ -77,28 +74,11 @@ export default function Schedule({ predictions }) {
 
                   <div className={styles.scoreArea}>
                     {isPlayed ? (
-                      <div className={styles.scoreStack}>
-                        <span className={styles.liveScore}>
-                          <span className={f.homeScore > f.awayScore ? styles.win : ''}>{f.homeScore}</span>
-                          <span className={styles.sdash}>–</span>
-                          <span className={f.awayScore > f.homeScore ? styles.win : ''}>{f.awayScore}</span>
-                        </span>
-                        {hasPred && (
-                          <span className={styles.predBelow}>
-                            pred: {pred.h}–{pred.a}
-                            {pred.h === f.homeScore && pred.a === f.awayScore
-                              ? <span className={styles.predExact}> ✓</span>
-                              : pred.h - pred.a === f.homeScore - f.awayScore ||
-                                (pred.h > pred.a) === (f.homeScore > f.awayScore) ||
-                                (pred.h === pred.a) === (f.homeScore === f.awayScore)
-                                ? <span className={styles.predResult}> ✓result</span>
-                                : <span className={styles.predWrong}> ✗</span>
-                            }
-                          </span>
-                        )}
-                      </div>
-                    ) : hasPred ? (
-                      <span className={styles.predScore}>{pred.h} – {pred.a}</span>
+                      <span className={styles.liveScore}>
+                        <span className={f.homeScore > f.awayScore ? styles.win : ''}>{f.homeScore}</span>
+                        <span className={styles.sdash}>–</span>
+                        <span className={f.awayScore > f.homeScore ? styles.win : ''}>{f.awayScore}</span>
+                      </span>
                     ) : (
                       <span className={styles.vsText}>vs</span>
                     )}
