@@ -169,3 +169,9 @@
 .oddsFavTeam { color:var(--green); }
 .oddsCentre { font-size:.6rem; color:var(--muted2); }
 .formLabel { font-size:.58rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
+
+.finalScoreStack { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.predCompare { font-size:.62rem; font-family:var(--mono); color:var(--muted2); white-space:nowrap; }
+.predExact  { color:var(--green); font-weight:700; }
+.predResult { color:var(--gold); }
+.predWrong  { color:var(--red); }
