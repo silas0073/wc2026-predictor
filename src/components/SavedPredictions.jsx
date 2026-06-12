@@ -3,7 +3,7 @@ import styles from './SavedPredictions.module.css'
 
 const SAVES_KEY = 'wc2026_saved_sets'
 
-export default function SavedPredictions({ predictions, onLoad }) {
+export default function SavedPredictions({ predictions, bracketPicks = {}, onLoad }) {
   const [saves, setSaves] = useState(() => {
     try { return JSON.parse(localStorage.getItem(SAVES_KEY) || '{}') } catch { return {} }
   })
@@ -19,14 +19,16 @@ export default function SavedPredictions({ predictions, onLoad }) {
   // Track if predictions differ from the loaded set
   useEffect(() => {
     if (!activeSet || !saves[activeSet]) { setDirty(false); return }
-    const saved = JSON.stringify(saves[activeSet].data)
-    const current = JSON.stringify(predictions)
-    setDirty(saved !== current)
-  }, [predictions, activeSet, saves])
+    const savedPreds = JSON.stringify(saves[activeSet].data)
+    const currentPreds = JSON.stringify(predictions)
+    const savedBracket = JSON.stringify(saves[activeSet].bracket || {})
+    const currentBracket = JSON.stringify(bracketPicks)
+    setDirty(savedPreds !== currentPreds || savedBracket !== currentBracket)
+  }, [predictions, bracketPicks, activeSet, saves])
 
   const save = () => {
     const n = name.trim() || `Prediction ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short' })} ${new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}`
-    setSaves(prev => ({ ...prev, [n]: { data: { ...predictions }, saved: new Date().toISOString() } }))
+    setSaves(prev => ({ ...prev, [n]: { data: { ...predictions }, bracket: { ...bracketPicks }, saved: new Date().toISOString() } }))
     setName('')
     setActiveSet(n)
     setDirty(false)
@@ -34,12 +36,12 @@ export default function SavedPredictions({ predictions, onLoad }) {
 
   const update = () => {
     if (!activeSet) return
-    setSaves(prev => ({ ...prev, [activeSet]: { data: { ...predictions }, saved: new Date().toISOString() } }))
+    setSaves(prev => ({ ...prev, [activeSet]: { data: { ...predictions }, bracket: { ...bracketPicks }, saved: new Date().toISOString() } }))
     setDirty(false)
   }
 
   const load = (n) => {
-    onLoad(saves[n].data)
+    onLoad(saves[n].data, saves[n].bracket || {})
     setActiveSet(n)
     setDirty(false)
     setOpen(false)
