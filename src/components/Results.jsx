@@ -3,10 +3,10 @@ import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-export default function Results({ predictions = {} }) {
+export default function Results({ predictions = {}, fixtures = FIXTURES }) {
   const [filterGroup, setFilterGroup] = useState('ALL')
 
-  const played = FIXTURES.filter(f => f.homeScore !== null)
+  const played = fixtures.filter(f => f.homeScore !== null)
   const filtered = filterGroup === 'ALL' ? played : played.filter(f => f.group === filterGroup)
 
   if (played.length === 0) {
