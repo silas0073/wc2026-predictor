@@ -39,7 +39,7 @@ export default function GoldenBoot() {
     let mounted = true
     const fetchScorers = async () => {
       try {
-        const res = await fetch('/api/scorers')
+        const res = await fetch('/api/scorers', { cache: 'no-store' })
         const data = await res.json()
         if (mounted) {
           setScorers(data.scorers || [])
@@ -50,8 +50,18 @@ export default function GoldenBoot() {
       }
     }
     fetchScorers()
-    const interval = setInterval(fetchScorers, 120000) // refresh every 2 min
-    return () => { mounted = false; clearInterval(interval) }
+    const interval = setInterval(fetchScorers, 60000) // refresh every 60s
+
+    // Refetch immediately when the tab/app becomes visible again
+    // (mobile browsers pause timers and cache fetches in background)
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchScorers() }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   const hasLiveData = scorers && scorers.length > 0
