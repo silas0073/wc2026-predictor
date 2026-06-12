@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { TEAMS } from '../data.js'
 import { matchOdds, formLabel } from '../odds.js'
 import { groupStandings } from '../utils.js'
-import { GROUP_LABELS } from '../data.js'
+import { GROUP_LABELS, FIXTURES } from '../data.js'
 import styles from './Bracket.module.css'
 
 const BRACKET_KEY = 'wc2026_bracket'
 
 // Official WC2026 R32 matchups (from FIFA schedule)
 // Third-place slots depend on which 8 groups produce qualifiers — we pick best 3rds from predictions
-function deriveR32(predictions) {
+function deriveR32(predictions, fixtures) {
   const w = {}, r = {}, t3 = []
   GROUP_LABELS.forEach(g => {
-    const rows = groupStandings(g, predictions)
+    const rows = groupStandings(g, predictions, fixtures)
     w[g] = rows[0]?.code || null
     r[g] = rows[1]?.code || null
     if (rows[2]?.code) t3.push({ code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
@@ -163,8 +163,8 @@ function RoundPanel({ title, matches, picks, onPick, onAutoFill, isActive, onAct
   )
 }
 
-export default function Bracket({ predictions }) {
-  const r32 = deriveR32(predictions)
+export default function Bracket({ predictions, fixtures = FIXTURES }) {
+  const r32 = deriveR32(predictions, fixtures)
 
   const [picks, setPicks] = useState(() => {
     try { return JSON.parse(localStorage.getItem(BRACKET_KEY) || '{}') } catch { return {} }
