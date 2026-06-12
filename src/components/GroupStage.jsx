@@ -146,8 +146,6 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
                   const away = teamObj(f.away)
                   const pred = predictions[f.id] || {}
                   const isPlayed = f.homeScore !== null
-                  const hScore = isPlayed ? f.homeScore : pred.h
-                  const aScore = isPlayed ? f.awayScore : pred.a
 
                   return (
                     <div key={f.id} className={`${styles.card} ${pred.h != null && !isPlayed ? styles.cardDone : ''} ${isPlayed ? styles.cardPlayed : ''}`}>
@@ -158,33 +156,9 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
                           <span className={styles.teamName}>{home.name}</span>
                         </div>
                         <div className={styles.scoreZone}>
-                          {isPlayed ? (
-                            <div className={styles.finalScoreStack}>
-                              <div className={styles.finalScore}>
-                                <span className={f.homeScore > f.awayScore ? styles.winner : ''}>{f.homeScore}</span>
-                                <span className={styles.dash}>–</span>
-                                <span className={f.awayScore > f.homeScore ? styles.winner : ''}>{f.awayScore}</span>
-                              </div>
-                              {pred.h != null && pred.a != null && (
-                                <div className={styles.predCompare}>
-                                  your pick: {pred.h}–{pred.a}
-                                  {pred.h === f.homeScore && pred.a === f.awayScore
-                                    ? <span className={styles.predExact}> ✓ exact</span>
-                                    : (pred.h > pred.a) === (f.homeScore > f.awayScore) &&
-                                      (pred.h === pred.a) === (f.homeScore === f.awayScore)
-                                      ? <span className={styles.predResult}> ✓ result</span>
-                                      : <span className={styles.predWrong}> ✗</span>
-                                  }
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              <ScoreInput value={pred.h} onChange={v => onPredict(f.id, v, pred.a ?? null)} color="#f5c518" />
-                              <span className={styles.vs}>vs</span>
-                              <ScoreInput value={pred.a} onChange={v => onPredict(f.id, pred.h ?? null, v)} color="#f5c518" />
-                            </>
-                          )}
+                          <ScoreInput value={pred.h} onChange={v => onPredict(f.id, v, pred.a ?? null)} color="#f5c518" />
+                          <span className={styles.vs}>vs</span>
+                          <ScoreInput value={pred.a} onChange={v => onPredict(f.id, pred.h ?? null, v)} color="#f5c518" />
                         </div>
                         <div className={`${styles.teamSide} ${styles.teamRight}`}>
                           <span className={styles.teamName}>{away.name}</span>
@@ -192,6 +166,11 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
                         </div>
                       </div>
                       {!isPlayed && <OddsBar homeCode={f.home} awayCode={f.away} />}
+                      {isPlayed && (
+                        <div className={styles.playedNote}>
+                          ✓ Played — final result: {f.homeScore}-{f.awayScore}
+                        </div>
+                      )}
                     </div>
                   )
                 })}
