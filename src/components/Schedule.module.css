@@ -39,3 +39,12 @@
 
 @media(max-width:500px) { .name { font-size:.78rem; } }
 
+
+.rowLive { border-color: rgba(255,68,68,.3); }
+.liveBadge {
+  font-size:.6rem; font-weight:700; color:var(--red);
+  font-family:var(--mono); letter-spacing:.04em;
+}
+.liveScoreActive {
+  font-family:var(--mono); font-size:1.15rem; font-weight:700; color:var(--red);
+}
