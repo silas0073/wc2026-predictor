@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { GROUP_LABELS } from '../data.js'
+import { GROUP_LABELS, FIXTURES } from '../data.js'
 import { groupStandings } from '../utils.js'
 import styles from './TableView.module.css'
 
-function GroupTable({ group, predictions }) {
-  const rows = groupStandings(group, predictions)
+function GroupTable({ group, predictions, fixtures }) {
+  const rows = groupStandings(group, predictions, fixtures)
   const hasPred = rows.some(r => r.P > 0)
 
   return (
@@ -43,7 +43,7 @@ function GroupTable({ group, predictions }) {
   )
 }
 
-export default function TableView({ predictions }) {
+export default function TableView({ predictions, fixtures = FIXTURES }) {
   const [view, setView] = useState('all')
 
   const groups = view === 'all' ? GROUP_LABELS : [view]
@@ -63,7 +63,7 @@ export default function TableView({ predictions }) {
       </div>
 
       <div className={`${styles.grid} ${view !== 'all' ? styles.single : ''}`}>
-        {groups.map(g => <GroupTable key={g} group={g} predictions={{}} />)}
+        {groups.map(g => <GroupTable key={g} group={g} predictions={{}} fixtures={fixtures} />)}
       </div>
 
       <div className={styles.legend}>
