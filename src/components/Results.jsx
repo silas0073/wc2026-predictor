@@ -59,6 +59,7 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
 
             return (
               <div key={f.id} className={styles.row}>
+                <div className={styles.rowTop}>
                 <span className={styles.grp}>Grp {f.group}</span>
                 <div className={styles.teams}>
                   <div className={`${styles.team} ${styles.teamL}`}>
@@ -85,6 +86,7 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                     <span className={`${styles.name} ${aw ? styles.winner : ''}`}>{away.name}</span>
                     <span className={styles.flag}>{away.flag}</span>
                   </div>
+                </div>
                 </div>
 
                 {(f.goals?.length > 0 || f.redCards?.length > 0) && (
