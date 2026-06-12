@@ -90,32 +90,32 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                 </div>
 
                 {(f.goals?.length > 0 || f.redCards?.length > 0) && (() => {
-                  const homeGoals = (f.goals || []).filter(g => g.team === f.home)
-                  const awayGoals = (f.goals || []).filter(g => g.team === f.away)
-                  const homeReds = (f.redCards || []).filter(r => r.team === f.home)
-                  const awayReds = (f.redCards || []).filter(r => r.team === f.away)
-
-                  const renderGoals = (list) => list.map((g, i) => (
-                    <div key={`g${i}`} className={styles.eventItem}>
-                      ⚽ {g.name}{g.ownGoal ? ' (OG)' : ''}{g.minute ? ` ${g.minute}` : ''}
-                    </div>
-                  ))
-                  const renderReds = (list) => list.map((r, i) => (
-                    <div key={`r${i}`} className={styles.eventItem}>
-                      🟥 {r.name}{r.minute ? ` ${r.minute}` : ''}
-                    </div>
-                  ))
+                  const all = [
+                    ...(f.goals || []).map(g => ({ ...g, kind: 'goal' })),
+                    ...(f.redCards || []).map(r => ({ ...r, kind: 'red' })),
+                  ]
+                  const minuteNum = (m) => {
+                    const match = (m || '').match(/(\d+)/)
+                    return match ? parseInt(match[1], 10) : 999
+                  }
+                  all.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
 
                   return (
                     <div className={styles.events}>
-                      <div className={styles.eventsCol}>
-                        {renderGoals(homeGoals)}
-                        {renderReds(homeReds)}
-                      </div>
-                      <div className={`${styles.eventsCol} ${styles.eventsColRight}`}>
-                        {renderGoals(awayGoals)}
-                        {renderReds(awayReds)}
-                      </div>
+                      {all.map((e, i) => {
+                        const teamFlag = e.team === f.home ? home.flag : away.flag
+                        const teamCode = e.team === f.home ? home.code : away.code
+                        return (
+                          <div key={i} className={styles.eventItem}>
+                            <span className={styles.eventFlag}>{teamFlag}</span>
+                            <span className={styles.eventIcon}>{e.kind === 'goal' ? '⚽' : '🟥'}</span>
+                            <span className={styles.eventText}>
+                              {e.name}{e.ownGoal ? ' (OG)' : ''}{e.minute ? ` ${e.minute}` : ''}
+                            </span>
+                            <span className={styles.eventTeamCode}>{teamCode}</span>
+                          </div>
+                        )
+                      })}
                     </div>
                   )
                 })()}
