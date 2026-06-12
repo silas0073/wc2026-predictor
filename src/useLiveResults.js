@@ -44,11 +44,11 @@ export function useLiveResults() {
 
     // If live match is finished, use live score
     if (live.status === 'post') {
-      return { ...f, homeScore: live.homeScore, awayScore: live.awayScore, liveStatus: 'post' }
+      return { ...f, homeScore: live.homeScore, awayScore: live.awayScore, liveStatus: 'post', goals: live.goals || [], redCards: live.redCards || [] }
     }
     // If in progress, expose live status but don't set final score
     if (live.status === 'in') {
-      return { ...f, liveStatus: 'in', liveHomeScore: live.homeScore, liveAwayScore: live.awayScore, liveClock: live.clock, liveDetail: live.statusDetail }
+      return { ...f, liveStatus: 'in', liveHomeScore: live.homeScore, liveAwayScore: live.awayScore, liveClock: live.clock, liveDetail: live.statusDetail, goals: live.goals || [], redCards: live.redCards || [] }
     }
     return f
   })
