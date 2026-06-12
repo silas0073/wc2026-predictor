@@ -26,7 +26,7 @@ export default function LiveScores() {
     let mounted = true
     const fetchScores = async () => {
       try {
-        const res = await fetch('/api/live-scores')
+        const res = await fetch('/api/live-scores', { cache: 'no-store' })
         const json = await res.json()
         if (mounted) setData(json)
       } catch (e) {
@@ -35,7 +35,15 @@ export default function LiveScores() {
     }
     fetchScores()
     const interval = setInterval(fetchScores, 60000) // poll every 60s
-    return () => { mounted = false; clearInterval(interval) }
+
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchScores() }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   if (error || !data) return null
