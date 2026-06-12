@@ -6,6 +6,7 @@ import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
 import GoldenBoot from './components/GoldenBoot.jsx'
+import LiveScores from './components/LiveScores.jsx'
 import Banner from './components/Banner.jsx'
 import { FIXTURES } from './data.js'
 import styles from './App.module.css'
@@ -14,7 +15,7 @@ const STORAGE_KEY = 'wc2026_predictions'
 const BRACKET_KEY = 'wc2026_bracket'
 
 // Only count valid upcoming fixture IDs
-const VALID_IDS = new Set(FIXTURES.filter(f => f.homeScore === null).map(f => f.id))
+const VALID_IDS = new Set(FIXTURES.map(f => f.id))
 
 const TABS = [
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
@@ -120,6 +121,7 @@ export default function App() {
           ))}
         </div>
       </nav>
+      <LiveScores />
       </div>
 
       <main className={styles.main}>
