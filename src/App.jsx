@@ -42,6 +42,14 @@ export default function App() {
     } catch { return {} }
   })
 
+  const [bracketPicks, setBracketPicks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(BRACKET_KEY) || '{}') } catch { return {} }
+  })
+
+  useEffect(() => {
+    try { localStorage.setItem(BRACKET_KEY, JSON.stringify(bracketPicks)) } catch {}
+  }, [bracketPicks])
+
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions)) } catch {}
   }, [predictions])
@@ -63,17 +71,24 @@ export default function App() {
     setPredictions(clean)
   }, [])
 
-  // Load a saved set — replaces all predictions AND clears bracket picks
-  // so bracket regenerates fresh from new group standings
-  const loadPredictions = useCallback((map) => {
+  // Load a saved set — replaces predictions and bracket picks together.
+  // If the saved set has no bracket data (older saves), clear bracket so
+  // it regenerates fresh from the new group standings.
+  const loadPredictions = useCallback((map, bracket) => {
     const clean = Object.fromEntries(Object.entries(map).filter(([id]) => VALID_IDS.has(id)))
     setPredictions(clean)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(clean))
-    localStorage.removeItem(BRACKET_KEY)
+    if (bracket && Object.keys(bracket).length > 0) {
+      setBracketPicks(bracket)
+    } else {
+      setBracketPicks({})
+      localStorage.removeItem(BRACKET_KEY)
+    }
   }, [])
 
   const clearAll = useCallback(() => {
     setPredictions({})
+    setBracketPicks({})
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(BRACKET_KEY)
   }, [])
@@ -128,11 +143,11 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} fixtures={liveFixtures} />}
+          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} fixtures={liveFixtures} bracketPicks={bracketPicks} />}
           {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'table'     && <TableView predictions={predictions} fixtures={liveFixtures} />}
-          {tab === 'bracket'   && <Bracket predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'bracket'   && <Bracket predictions={predictions} fixtures={liveFixtures} picks={bracketPicks} onPicksChange={setBracketPicks} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
           {tab === 'golden'    && <GoldenBoot />}
         </div>
