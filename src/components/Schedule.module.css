@@ -31,7 +31,6 @@
 
 .scoreArea { display:flex; justify-content:center; min-width:64px; }
 .liveScore { font-family:var(--mono); font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:3px; }
-.predScore { font-family:var(--mono); font-size:1.1rem; font-weight:700; color:var(--gold); }
 .vsText { font-size:.65rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.08em; }
 .win  { color:var(--green); }
 .sdash { color:var(--muted2); font-weight:400; font-size:.9rem; }
@@ -40,8 +39,3 @@
 
 @media(max-width:500px) { .name { font-size:.78rem; } }
 
-.scoreStack { display:flex; flex-direction:column; align-items:center; gap:3px; }
-.predBelow { font-size:.62rem; font-family:var(--mono); color:var(--muted2); }
-.predExact  { color:var(--green); font-weight:700; }
-.predResult { color:var(--gold); }
-.predWrong  { color:var(--red); }
