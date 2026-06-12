@@ -7,6 +7,7 @@ import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
 import GoldenBoot from './components/GoldenBoot.jsx'
 import LiveScores from './components/LiveScores.jsx'
+import { useLiveResults } from './useLiveResults.js'
 import Banner from './components/Banner.jsx'
 import { FIXTURES } from './data.js'
 import styles from './App.module.css'
@@ -29,6 +30,7 @@ const TABS = [
 
 export default function App() {
   const [tab, setTab] = useState('predictor')
+  const { fixtures: liveFixtures } = useLiveResults()
 
   const [predictions, setPredictions] = useState(() => {
     try {
@@ -126,11 +128,11 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} />}
-          {tab === 'schedule'  && <Schedule predictions={predictions} />}
-          {tab === 'results'   && <Results predictions={predictions} />}
-          {tab === 'table'     && <TableView predictions={predictions} />}
-          {tab === 'bracket'   && <Bracket predictions={predictions} />}
+          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} fixtures={liveFixtures} />}
+          {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'table'     && <TableView predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'bracket'   && <Bracket predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
           {tab === 'golden'    && <GoldenBoot />}
         </div>
