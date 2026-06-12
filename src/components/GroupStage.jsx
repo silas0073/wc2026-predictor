@@ -82,7 +82,7 @@ function OddsBar({ homeCode, awayCode }) {
 }
 
 
-export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace, fixtures: liveFixtures = FIXTURES }) {
+export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace, fixtures: liveFixtures = FIXTURES, bracketPicks = {} }) {
   const [activeGroup, setActiveGroup] = useState('A')
 
   const fixtures = liveFixtures.filter(f => f.group === activeGroup)
@@ -106,7 +106,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
         <p>Pick scores for each match — standings update live</p>
       </div>
 
-      <SavedPredictions predictions={predictions} onLoad={onLoad} />
+      <SavedPredictions predictions={predictions} bracketPicks={bracketPicks} onLoad={onLoad} />
 
       <div className={styles.groupTabs}><div className={styles.groupTabsInner}>
         {GROUP_LABELS.map(g => {
