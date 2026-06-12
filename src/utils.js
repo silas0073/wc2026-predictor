@@ -29,11 +29,11 @@ export function formatAESTDate(utcStr) {
 
 export function teamObj(code) { return { code, ...TEAMS[code] } }
 
-export function groupStandings(groupLetter, predictions = {}) {
+export function groupStandings(groupLetter, predictions = {}, allFixtures = FIXTURES) {
   const teamCodes = GROUPS[groupLetter]
   const rows = Object.fromEntries(teamCodes.map(c => [c, { P:0,W:0,D:0,L:0,GF:0,GA:0,Pts:0 }]))
 
-  const fixtures = FIXTURES.filter(f => f.group === groupLetter)
+  const fixtures = allFixtures.filter(f => f.group === groupLetter)
   fixtures.forEach(f => {
     // Use real score if available, else prediction
     const hs = f.homeScore !== null ? f.homeScore : predictions[f.id]?.h
