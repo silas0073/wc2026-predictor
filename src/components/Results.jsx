@@ -86,6 +86,38 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                     <span className={styles.flag}>{away.flag}</span>
                   </div>
                 </div>
+
+                {(f.goals?.length > 0 || f.redCards?.length > 0) && (
+                  <div className={styles.events}>
+                    {f.goals?.length > 0 && (
+                      <div className={styles.eventLine}>
+                        <span className={styles.eventIcon}>⚽</span>
+                        <span className={styles.eventList}>
+                          {f.goals.map((g, i) => (
+                            <span key={i} className={styles.eventItem}>
+                              {g.name}{g.ownGoal ? ' (OG)' : ''}{g.minute ? ` ${g.minute}` : ''}
+                              {g.assist ? <span className={styles.assistNote}> (ast. {g.assist})</span> : null}
+                              {i < f.goals.length - 1 ? ',' : ''}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    )}
+                    {f.redCards?.length > 0 && (
+                      <div className={styles.eventLine}>
+                        <span className={styles.eventIcon}>🟥</span>
+                        <span className={styles.eventList}>
+                          {f.redCards.map((r, i) => (
+                            <span key={i} className={styles.eventItem}>
+                              {r.name}{r.minute ? ` ${r.minute}` : ''}
+                              {i < f.redCards.length - 1 ? ',' : ''}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}
