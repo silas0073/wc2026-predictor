@@ -1,0 +1,43 @@
+.wrap {
+  background: linear-gradient(135deg, rgba(255,68,68,.1), rgba(255,68,68,.03));
+  border-bottom: 1px solid rgba(255,68,68,.25);
+}
+
+.header {
+  width: 100%; display:flex; align-items:center; gap:8px;
+  padding: 8px 12px; background:none; border:none; color:var(--white);
+  max-width: 1100px; margin: 0 auto;
+}
+
+.liveDot {
+  width: 8px; height: 8px; background: var(--red); border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite; flex-shrink:0;
+}
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.8); } }
+
+.title {
+  flex: 1; text-align:left; font-size:.78rem; font-weight:700;
+  color: var(--red); text-transform:uppercase; letter-spacing:.06em;
+}
+.chevron { font-size:.65rem; color: var(--muted); }
+
+.matches {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 12px 10px; display:flex; flex-direction:column; gap:6px;
+}
+
+.match {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background: var(--bg2); border: 1px solid rgba(255,68,68,.15);
+  border-radius: 8px; padding: 8px 12px; font-size:.8rem;
+}
+
+.teams { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.team { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.winning { color: var(--green); }
+.score { font-family: var(--mono); font-weight:800; }
+.sep { color: var(--muted2); }
+.clock {
+  font-family: var(--mono); font-size:.7rem; color: var(--red);
+  font-weight:700; white-space:nowrap; flex-shrink:0;
+}
