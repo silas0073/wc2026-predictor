@@ -18,8 +18,8 @@ function ScoreInput({ value, onChange, color }) {
   )
 }
 
-function StandingsTable({ group, predictions }) {
-  const rows = groupStandings(group, predictions)
+function StandingsTable({ group, predictions, fixtures }) {
+  const rows = groupStandings(group, predictions, fixtures)
   return (
     <table className={styles.table}>
       <thead>
@@ -82,10 +82,10 @@ function OddsBar({ homeCode, awayCode }) {
 }
 
 
-export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace }) {
+export default function GroupStage({ predictions, onPredict, onBulkPredict, onLoad, onReplace, fixtures: liveFixtures = FIXTURES }) {
   const [activeGroup, setActiveGroup] = useState('A')
 
-  const fixtures = FIXTURES.filter(f => f.group === activeGroup)
+  const fixtures = liveFixtures.filter(f => f.group === activeGroup)
   const upcoming = fixtures.filter(f => f.homeScore === null)
 
   const handleAutoFill = () => {
@@ -110,9 +110,9 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
 
       <div className={styles.groupTabs}><div className={styles.groupTabsInner}>
         {GROUP_LABELS.map(g => {
-          const done = FIXTURES.filter(f => f.group===g && f.homeScore===null)
+          const done = liveFixtures.filter(f => f.group===g && f.homeScore===null)
             .filter(f => predictions[f.id] !== undefined).length
-          const total = FIXTURES.filter(f => f.group===g && f.homeScore===null).length
+          const total = liveFixtures.filter(f => f.group===g && f.homeScore===null).length
           return (
             <button
               key={g}
@@ -181,7 +181,7 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
 
         <div className={styles.standingsCol}>
           <div className={styles.colHeader}><span>Group {activeGroup} Standings</span></div>
-          <StandingsTable group={activeGroup} predictions={predictions} />
+          <StandingsTable group={activeGroup} predictions={predictions} fixtures={liveFixtures} />
           <div className={styles.standingsNote}>
             <span className={styles.qualifyDot} /> Top 2 qualify automatically · 8 best 3rd-place teams also advance
           </div>
