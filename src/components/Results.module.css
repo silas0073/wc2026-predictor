@@ -46,13 +46,14 @@
 
 .events {
   margin-top:8px; padding-top:8px; border-top:1px solid rgba(107,128,153,.08);
-  display:flex; flex-direction:column; gap:4px;
+  display:grid; grid-template-columns:1fr 1fr; gap:4px 12px;
 }
-.eventLine { display:flex; align-items:flex-start; gap:6px; font-size:.7rem; color:var(--muted); }
-.eventIcon { flex-shrink:0; font-size:.75rem; line-height:1.5; }
-.eventList { line-height:1.5; flex:1; min-width:0; display:flex; flex-wrap:wrap; gap:4px 0; }
-.eventItem { white-space:normal; word-break:break-word; }
-.assistNote { color:var(--muted2); font-style:italic; }
+.eventsCol {
+  display:flex; flex-direction:column; gap:3px;
+  font-size:.7rem; color:var(--muted); text-align:right;
+}
+.eventsColRight { text-align:left; }
+.eventItem { white-space:normal; word-break:break-word; line-height:1.4; }
 
 @media(max-width:420px) {
   .name { font-size:.78rem; }
