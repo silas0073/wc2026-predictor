@@ -1,6 +1,7 @@
 // Fetches all WC2026 results from ESPN and returns a map keyed by team-pair
 // so the frontend can merge real scores onto our fixture list without
-// needing to maintain data.js manually.
+// needing to maintain data.js manually. Also includes goal scorers (with
+// minute) and red cards per match.
 
 const TEAM_CODE_MAP = {
   // ESPN abbreviation -> our code (only where they differ)
@@ -12,6 +13,79 @@ const TEAM_CODE_MAP = {
 
 function normalizeCode(espnCode) {
   return TEAM_CODE_MAP[espnCode] || espnCode
+}
+
+function extractEvents(summary, teamAbbrevById) {
+  const goals = []
+  const redCards = []
+  const seen = new Set()
+
+  const candidates = [
+    summary.keyEvents,
+    summary.commentary,
+    summary.header?.competitions?.[0]?.details,
+    summary.plays,
+  ].filter(Array.isArray)
+
+  candidates.forEach(list => {
+    list.forEach(k => {
+      const typeText = (k.type?.text || k.type?.id || k.text || '').toString()
+      const teamId = k.team?.id != null ? String(k.team.id) : null
+      const teamCode = teamId ? teamAbbrevById[teamId] : null
+      if (!teamCode) return
+
+      const minute = k.clock?.displayValue || (k.clock?.value != null ? `${Math.floor(k.clock.value / 60)}'` : null)
+
+      const athletes = k.athletesInvolved || k.participants?.map(p => p.athlete).filter(Boolean) || []
+      const main = athletes[0]
+      const assister = athletes[1]
+      const mainName = main?.displayName || main?.shortName || main?.name
+      const assisterName = assister?.displayName || assister?.shortName || assister?.name
+
+      const dedupeKey = `${typeText}-${teamId}-${mainName}-${k.clock?.value ?? k.time ?? ''}`
+      if (seen.has(dedupeKey)) return
+
+      if (/goal/i.test(typeText) && !/own.?goal|disallowed|var/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        goals.push({
+          name: mainName,
+          team: teamCode,
+          minute: minute || '',
+          assist: assisterName || null,
+          ownGoal: false,
+        })
+      } else if (/own.?goal/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        goals.push({
+          name: mainName,
+          team: teamCode,
+          minute: minute || '',
+          assist: null,
+          ownGoal: true,
+        })
+      } else if (/red card/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        redCards.push({
+          name: mainName,
+          team: teamCode,
+          minute: minute || '',
+        })
+      }
+    })
+  })
+
+  // Sort by minute (numeric prefix) where possible
+  const minuteNum = (m) => {
+    const match = (m || '').match(/(\d+)/)
+    return match ? parseInt(match[1], 10) : 999
+  }
+  goals.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+  redCards.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+
+  return { goals, redCards }
 }
 
 export default async (req) => {
@@ -35,10 +109,10 @@ export default async (req) => {
       } catch {}
     }))
 
-    // Build results keyed by "HOMECODE-AWAYCODE" (and reverse for safety)
+    // Build results keyed by "HOMECODE-AWAYCODE"
     const results = {}
 
-    allEvents.forEach(ev => {
+    await Promise.all(allEvents.map(async (ev) => {
       const comp = ev.competitions?.[0]
       const competitors = comp?.competitors || []
       const home = competitors.find(c => c.homeAway === 'home')
@@ -50,19 +124,40 @@ export default async (req) => {
       if (!homeCode || !awayCode) return
 
       const key = `${homeCode}-${awayCode}`
-      results[key] = {
+      const entry = {
         homeScore: status.state === 'pre' ? null : Number(home?.score ?? 0),
         awayScore: status.state === 'pre' ? null : Number(away?.score ?? 0),
         status: status.state, // 'pre' | 'in' | 'post'
         statusDetail: status.shortDetail,
         clock: comp?.status?.displayClock,
         date: ev.date,
+        goals: [],
+        redCards: [],
       }
-    })
+
+      // Fetch events (goals + red cards) for played/in-progress matches
+      if (status.state === 'post' || status.state === 'in') {
+        try {
+          const sumRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${ev.id}`)
+          const summary = await sumRes.json()
+
+          const teamAbbrevById = {}
+          competitors.forEach(c => {
+            if (c.team?.id != null) teamAbbrevById[String(c.team.id)] = normalizeCode(c.team?.abbreviation)
+          })
+
+          const { goals, redCards } = extractEvents(summary, teamAbbrevById)
+          entry.goals = goals
+          entry.redCards = redCards
+        } catch {}
+      }
+
+      results[key] = entry
+    }))
 
     return new Response(JSON.stringify({ results, updated: new Date().toISOString(), count: Object.keys(results).length }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message, results: {} }), {
