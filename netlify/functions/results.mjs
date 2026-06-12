@@ -38,9 +38,7 @@ function extractEvents(summary, teamAbbrevById) {
 
       const athletes = k.athletesInvolved || k.participants?.map(p => p.athlete).filter(Boolean) || []
       const main = athletes[0]
-      const assister = athletes[1]
       const mainName = main?.displayName || main?.shortName || main?.name
-      const assisterName = assister?.displayName || assister?.shortName || assister?.name
 
       const dedupeKey = `${typeText}-${teamId}-${mainName}-${k.clock?.value ?? k.time ?? ''}`
       if (seen.has(dedupeKey)) return
@@ -52,7 +50,6 @@ function extractEvents(summary, teamAbbrevById) {
           name: mainName,
           team: teamCode,
           minute: minute || '',
-          assist: assisterName || null,
           ownGoal: false,
         })
       } else if (/own.?goal/i.test(typeText)) {
@@ -62,7 +59,6 @@ function extractEvents(summary, teamAbbrevById) {
           name: mainName,
           team: teamCode,
           minute: minute || '',
-          assist: null,
           ownGoal: true,
         })
       } else if (/red card/i.test(typeText)) {
