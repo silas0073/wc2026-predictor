@@ -159,10 +159,24 @@ export default function GroupStage({ predictions, onPredict, onBulkPredict, onLo
                         </div>
                         <div className={styles.scoreZone}>
                           {isPlayed ? (
-                            <div className={styles.finalScore}>
-                              <span className={f.homeScore > f.awayScore ? styles.winner : ''}>{f.homeScore}</span>
-                              <span className={styles.dash}>–</span>
-                              <span className={f.awayScore > f.homeScore ? styles.winner : ''}>{f.awayScore}</span>
+                            <div className={styles.finalScoreStack}>
+                              <div className={styles.finalScore}>
+                                <span className={f.homeScore > f.awayScore ? styles.winner : ''}>{f.homeScore}</span>
+                                <span className={styles.dash}>–</span>
+                                <span className={f.awayScore > f.homeScore ? styles.winner : ''}>{f.awayScore}</span>
+                              </div>
+                              {pred.h != null && pred.a != null && (
+                                <div className={styles.predCompare}>
+                                  your pick: {pred.h}–{pred.a}
+                                  {pred.h === f.homeScore && pred.a === f.awayScore
+                                    ? <span className={styles.predExact}> ✓ exact</span>
+                                    : (pred.h > pred.a) === (f.homeScore > f.awayScore) &&
+                                      (pred.h === pred.a) === (f.homeScore === f.awayScore)
+                                      ? <span className={styles.predResult}> ✓ result</span>
+                                      : <span className={styles.predWrong}> ✗</span>
+                                  }
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <>
