@@ -13,7 +13,7 @@ export function useLiveResults() {
     let mounted = true
     const fetchResults = async () => {
       try {
-        const res = await fetch('/api/results')
+        const res = await fetch('/api/results', { cache: 'no-store' })
         const data = await res.json()
         if (mounted) {
           setLiveResults(data.results || {})
@@ -25,7 +25,15 @@ export function useLiveResults() {
     }
     fetchResults()
     const interval = setInterval(fetchResults, 60000) // refresh every 60s
-    return () => { mounted = false; clearInterval(interval) }
+
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchResults() }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   // Merge live results onto FIXTURES
