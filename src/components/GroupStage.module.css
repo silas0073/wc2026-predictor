@@ -175,3 +175,8 @@
 .predExact  { color:var(--green); font-weight:700; }
 .predResult { color:var(--gold); }
 .predWrong  { color:var(--red); }
+
+.playedNote {
+  margin-top:8px; font-size:.65rem; color:var(--green);
+  font-family:var(--mono); text-align:center;
+}
