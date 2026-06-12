@@ -89,37 +89,36 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                 </div>
                 </div>
 
-                {(f.goals?.length > 0 || f.redCards?.length > 0) && (
-                  <div className={styles.events}>
-                    {f.goals?.length > 0 && (
-                      <div className={styles.eventLine}>
-                        <span className={styles.eventIcon}>⚽</span>
-                        <span className={styles.eventList}>
-                          {f.goals.map((g, i) => (
-                            <span key={i} className={styles.eventItem}>
-                              {g.name}{g.ownGoal ? ' (OG)' : ''}{g.minute ? ` ${g.minute}` : ''}
-                              {g.assist ? <span className={styles.assistNote}> (ast. {g.assist})</span> : null}
-                              {i < f.goals.length - 1 ? ',' : ''}
-                            </span>
-                          ))}
-                        </span>
+                {(f.goals?.length > 0 || f.redCards?.length > 0) && (() => {
+                  const homeGoals = (f.goals || []).filter(g => g.team === f.home)
+                  const awayGoals = (f.goals || []).filter(g => g.team === f.away)
+                  const homeReds = (f.redCards || []).filter(r => r.team === f.home)
+                  const awayReds = (f.redCards || []).filter(r => r.team === f.away)
+
+                  const renderGoals = (list) => list.map((g, i) => (
+                    <div key={`g${i}`} className={styles.eventItem}>
+                      ⚽ {g.name}{g.ownGoal ? ' (OG)' : ''}{g.minute ? ` ${g.minute}` : ''}
+                    </div>
+                  ))
+                  const renderReds = (list) => list.map((r, i) => (
+                    <div key={`r${i}`} className={styles.eventItem}>
+                      🟥 {r.name}{r.minute ? ` ${r.minute}` : ''}
+                    </div>
+                  ))
+
+                  return (
+                    <div className={styles.events}>
+                      <div className={styles.eventsCol}>
+                        {renderGoals(homeGoals)}
+                        {renderReds(homeReds)}
                       </div>
-                    )}
-                    {f.redCards?.length > 0 && (
-                      <div className={styles.eventLine}>
-                        <span className={styles.eventIcon}>🟥</span>
-                        <span className={styles.eventList}>
-                          {f.redCards.map((r, i) => (
-                            <span key={i} className={styles.eventItem}>
-                              {r.name}{r.minute ? ` ${r.minute}` : ''}
-                              {i < f.redCards.length - 1 ? ',' : ''}
-                            </span>
-                          ))}
-                        </span>
+                      <div className={`${styles.eventsCol} ${styles.eventsColRight}`}>
+                        {renderGoals(awayGoals)}
+                        {renderReds(awayReds)}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )
+                })()}
               </div>
             )
           })}
