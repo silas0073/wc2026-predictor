@@ -163,17 +163,23 @@ function RoundPanel({ title, matches, picks, onPick, onAutoFill, isActive, onAct
   )
 }
 
-export default function Bracket({ predictions, fixtures = FIXTURES }) {
+export default function Bracket({ predictions, fixtures = FIXTURES, picks: externalPicks, onPicksChange }) {
   const r32 = deriveR32(predictions, fixtures)
 
-  const [picks, setPicks] = useState(() => {
+  // Support both controlled (from App) and uncontrolled (fallback) usage
+  const [internalPicks, setInternalPicks] = useState(() => {
     try { return JSON.parse(localStorage.getItem(BRACKET_KEY) || '{}') } catch { return {} }
   })
+  const picks = externalPicks ?? internalPicks
+  const setPicks = onPicksChange ?? setInternalPicks
+
   const [activeRound, setActiveRound] = useState('r32')
 
   useEffect(() => {
-    try { localStorage.setItem(BRACKET_KEY, JSON.stringify(picks)) } catch {}
-  }, [picks])
+    if (!onPicksChange) {
+      try { localStorage.setItem(BRACKET_KEY, JSON.stringify(picks)) } catch {}
+    }
+  }, [picks, onPicksChange])
 
   const gp = (round, id) => picks[`${round}.${id}`]
   const sp = (round, id, team) => setPicks(prev => ({ ...prev, [`${round}.${id}`]: team }))
@@ -247,7 +253,7 @@ export default function Bracket({ predictions, fixtures = FIXTURES }) {
         <div className={styles.headerBtns}>
           <button className={styles.autoAllBtn} onClick={autoFillAll}>⚡ Auto-fill all</button>
           {Object.keys(picks).length > 0 && (
-            <button className={styles.clearBtn} onClick={() => { setPicks({}); localStorage.removeItem(BRACKET_KEY) }}>Reset</button>
+            <button className={styles.clearBtn} onClick={() => setPicks({})}>Reset</button>
           )}
         </div>
       </div>
