@@ -2,11 +2,12 @@ import React, { useState } from 'react'
 import { TEAMS, FIXTURES } from '../data.js'
 import styles from './GoldenBoot.module.css'
 
-// Scorers data — will be populated as tournament progresses
+// Scorers data — updated as matches are played
 // Format: { name, team, goals, assists, matches }
 export const SCORERS = [
-  // Populated after matches are played
-  // Example: { name: 'Erling Haaland', team: 'NOR', goals: 0, assists: 0, matches: 0 },
+  { name: 'Julian Quiñones', team: 'MEX', goals: 1, assists: 1, matches: 1 },
+  { name: 'Raul Jimenez',    team: 'MEX', goals: 1, assists: 0, matches: 1 },
+  { name: 'Roberto Alvarado', team: 'MEX', goals: 0, assists: 1, matches: 1 },
 ]
 
 // Pre-tournament star players to watch
