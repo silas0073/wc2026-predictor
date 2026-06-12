@@ -9,11 +9,11 @@ import styles from './GroupStage.module.css'
 function ScoreInput({ value, onChange, color }) {
   return (
     <div className={styles.scoreInput}>
-      <button onClick={() => onChange(Math.max(0, (value ?? 0) - 1))}>−</button>
+      <button onClick={() => onChange(Math.max(0, (value ?? 0) - 1))} aria-label="decrease">−</button>
       <span className={styles.scoreVal} style={{ color: value != null ? color : undefined }}>
-        {value != null ? value : '–'}
+        {value != null ? value : '·'}
       </span>
-      <button onClick={() => onChange((value ?? 0) + 1)}>+</button>
+      <button onClick={() => onChange((value ?? 0) + 1)} aria-label="increase">+</button>
     </div>
   )
 }
