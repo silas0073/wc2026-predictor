@@ -42,3 +42,13 @@
 .predExact  { color:var(--green); font-weight:700; }
 .predResult { color:var(--gold); }
 .predWrong  { color:var(--red); }
+
+.events {
+  margin-top:8px; padding-top:8px; border-top:1px solid rgba(107,128,153,.08);
+  display:flex; flex-direction:column; gap:4px;
+}
+.eventLine { display:flex; align-items:flex-start; gap:6px; font-size:.7rem; color:var(--muted); }
+.eventIcon { flex-shrink:0; font-size:.75rem; line-height:1.4; }
+.eventList { line-height:1.5; }
+.eventItem { white-space:nowrap; display:inline-block; margin-right:4px; }
+.assistNote { color:var(--muted2); font-style:italic; }
