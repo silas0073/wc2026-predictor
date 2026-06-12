@@ -3,11 +3,11 @@ import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { teamObj, formatAESTDate, formatAEST } from '../utils.js'
 import styles from './Schedule.module.css'
 
-export default function Schedule({ predictions }) {
+export default function Schedule({ predictions, fixtures = FIXTURES }) {
   const [filterGroup, setFilterGroup] = useState('ALL')
   const [showPlayed, setShowPlayed] = useState(true)
 
-  const filtered = FIXTURES.filter(f =>
+  const filtered = fixtures.filter(f =>
     (filterGroup === 'ALL' || f.group === filterGroup) &&
     (showPlayed || f.homeScore === null)
   )
@@ -54,15 +54,18 @@ export default function Schedule({ predictions }) {
             const home = teamObj(f.home)
             const away = teamObj(f.away)
             const isPlayed = f.homeScore !== null
+            const isLive = f.liveStatus === 'in'
             const pred = predictions[f.id]
             return (
-              <div key={f.id} className={`${styles.row} ${isPlayed ? styles.rowPlayed : ''}`}>
+              <div key={f.id} className={`${styles.row} ${isPlayed ? styles.rowPlayed : ''} ${isLive ? styles.rowLive : ''}`}>
                 <div className={styles.rowMeta}>
                   <span className={styles.grpBadge}>Grp {f.group}</span>
                   <span className={styles.time}>
                     {isPlayed
                       ? <span className={styles.ftBadge}>FT</span>
-                      : formatAEST(f.kickoff)
+                      : isLive
+                        ? <span className={styles.liveBadge}>● {f.liveClock || 'LIVE'}</span>
+                        : formatAEST(f.kickoff)
                     }
                   </span>
                 </div>
@@ -94,6 +97,10 @@ export default function Schedule({ predictions }) {
                           </span>
                         )}
                       </div>
+                    ) : isLive ? (
+                      <span className={styles.liveScoreActive}>
+                        {f.liveHomeScore} – {f.liveAwayScore}
+                      </span>
                     ) : (
                       <span className={styles.vsText}>vs</span>
                     )}
