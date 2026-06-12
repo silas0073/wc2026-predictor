@@ -46,14 +46,19 @@
 
 .events {
   margin-top:8px; padding-top:8px; border-top:1px solid rgba(107,128,153,.08);
-  display:grid; grid-template-columns:1fr 1fr; gap:4px 12px;
+  display:flex; flex-direction:column; gap:5px;
 }
-.eventsCol {
-  display:flex; flex-direction:column; gap:3px;
-  font-size:.7rem; color:var(--muted); text-align:right;
+.eventItem {
+  display:flex; align-items:center; gap:6px;
+  font-size:.7rem; color:var(--muted);
 }
-.eventsColRight { text-align:left; }
-.eventItem { white-space:normal; word-break:break-word; line-height:1.4; }
+.eventFlag { font-size:.85rem; flex-shrink:0; }
+.eventIcon { flex-shrink:0; }
+.eventText { flex:1; min-width:0; word-break:break-word; }
+.eventTeamCode {
+  flex-shrink:0; font-family:var(--mono); font-size:.6rem; color:var(--muted2);
+  background:var(--bg3); padding:1px 6px; border-radius:4px; text-transform:uppercase;
+}
 
 @media(max-width:420px) {
   .name { font-size:.78rem; }
