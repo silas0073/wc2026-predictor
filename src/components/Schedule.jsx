@@ -54,6 +54,7 @@ export default function Schedule({ predictions }) {
             const home = teamObj(f.home)
             const away = teamObj(f.away)
             const isPlayed = f.homeScore !== null
+            const pred = predictions[f.id]
             return (
               <div key={f.id} className={`${styles.row} ${isPlayed ? styles.rowPlayed : ''}`}>
                 <div className={styles.rowMeta}>
