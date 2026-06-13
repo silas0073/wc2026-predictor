@@ -6,6 +6,7 @@ import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
 import GoldenBoot from './components/GoldenBoot.jsx'
+import Teams from './components/Teams.jsx'
 import LiveScores from './components/LiveScores.jsx'
 import { useLiveResults } from './useLiveResults.js'
 import Banner from './components/Banner.jsx'
@@ -26,6 +27,7 @@ const TABS = [
   { id: 'results',   label: 'Results',   icon: '🏁' },
   { id: 'table',     label: 'Standings', icon: '📊' },
   { id: 'golden',    label: 'Top Scorers', icon: '🥾' },
+  { id: 'teams',     label: 'Teams', icon: '🌍' },
 ]
 
 export default function App() {
@@ -150,6 +152,7 @@ export default function App() {
           {tab === 'bracket'   && <Bracket predictions={predictions} fixtures={liveFixtures} picks={bracketPicks} onPicksChange={setBracketPicks} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
           {tab === 'golden'    && <GoldenBoot />}
+          {tab === 'teams'     && <Teams />}
         </div>
       </main>
     </div>
