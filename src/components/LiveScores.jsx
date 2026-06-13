@@ -91,6 +91,16 @@ export default function LiveScores() {
                     </div>
                   </div>
                 )}
+
+                {ev.redCards?.length > 0 && (
+                  <div className={styles.redCards}>
+                    {ev.redCards.map((r, i) => (
+                      <span key={i} className={styles.redCardItem}>
+                        🟥 {r.name} <span className={styles.redCardTeam}>{r.team}</span>{r.minute ? ` ${r.minute}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )
           })}
