@@ -61,20 +61,39 @@ export default function LiveScores() {
       </button>
       {!collapsed && (
         <div className={styles.matches}>
-          {liveMatches.map(ev => (
-            <div key={ev.id} className={styles.match}>
-              <div className={styles.teams}>
-                <span className={`${styles.team} ${ev.home.winner ? styles.winning : ''}`}>
-                  {ev.home.name} <span className={styles.score}>{ev.home.score}</span>
-                </span>
-                <span className={styles.sep}>–</span>
-                <span className={`${styles.team} ${ev.away.winner ? styles.winning : ''}`}>
-                  <span className={styles.score}>{ev.away.score}</span> {ev.away.name}
-                </span>
+          {liveMatches.map(ev => {
+            const hasPossession = ev.home.possession != null && ev.away.possession != null
+            return (
+              <div key={ev.id} className={styles.match}>
+                <div className={styles.matchTop}>
+                <div className={styles.teams}>
+                  <span className={`${styles.team} ${ev.home.winner ? styles.winning : ''}`}>
+                    {ev.home.name} <span className={styles.score}>{ev.home.score}</span>
+                  </span>
+                  <span className={styles.sep}>–</span>
+                  <span className={`${styles.team} ${ev.away.winner ? styles.winning : ''}`}>
+                    <span className={styles.score}>{ev.away.score}</span> {ev.away.name}
+                  </span>
+                </div>
+                <span className={styles.clock}>{ev.clock} {ev.statusDetail}</span>
+                </div>
+
+                {hasPossession && (
+                  <div className={styles.possessionWrap}>
+                    <div className={styles.possessionLabels}>
+                      <span>{ev.home.possession}%</span>
+                      <span className={styles.possessionTitle}>Possession</span>
+                      <span>{ev.away.possession}%</span>
+                    </div>
+                    <div className={styles.possessionBar}>
+                      <div className={styles.possessionHome} style={{ width: `${ev.home.possession}%` }} />
+                      <div className={styles.possessionAway} style={{ width: `${ev.away.possession}%` }} />
+                    </div>
+                  </div>
+                )}
               </div>
-              <span className={styles.clock}>{ev.clock} {ev.statusDetail}</span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
