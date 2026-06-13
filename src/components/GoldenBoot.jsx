@@ -30,31 +30,29 @@ export const ONES_TO_WATCH = [
   .filter(p => TEAMS[p.team]) // only teams in tournament
 
 export default function GoldenBoot() {
-  const [tab, setTab] = useState('live')
-  const [scorers, setScorers] = useState(null)
+  const [tab, setTab] = useState('top')
+  const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     let mounted = true
-    const fetchScorers = async () => {
+    const fetchResults = async () => {
       try {
-        const res = await fetch('/api/scorers', { cache: 'no-store' })
+        const res = await fetch('/api/results', { cache: 'no-store' })
         const data = await res.json()
         if (mounted) {
-          setScorers(data.scorers || [])
+          setResults(data.results || {})
           setLoading(false)
         }
       } catch (e) {
         if (mounted) { setError(e.message); setLoading(false) }
       }
     }
-    fetchScorers()
-    const interval = setInterval(fetchScorers, 60000) // refresh every 60s
+    fetchResults()
+    const interval = setInterval(fetchResults, 60000)
 
-    // Refetch immediately when the tab/app becomes visible again
-    // (mobile browsers pause timers and cache fetches in background)
-    const onVisible = () => { if (document.visibilityState === 'visible') fetchScorers() }
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchResults() }
     document.addEventListener('visibilitychange', onVisible)
 
     return () => {
@@ -64,8 +62,23 @@ export default function GoldenBoot() {
     }
   }, [])
 
-  const hasLiveData = scorers && scorers.length > 0
-  const topScorers = scorers ? [...scorers].sort((a,b) => b.goals-a.goals || (b.assists||0)-(a.assists||0)) : []
+  // Aggregate goals across every match played so far in the tournament
+  // (own goals don't count toward the Golden Boot)
+  const scorerMap = {}
+  if (results) {
+    Object.values(results).forEach(match => {
+      if (match.status !== 'post' && match.status !== 'in') return
+      ;(match.goals || []).forEach(g => {
+        if (g.ownGoal) return
+        const key = `${g.name}|${g.team}`
+        if (!scorerMap[key]) scorerMap[key] = { name: g.name, team: g.team, goals: 0 }
+        scorerMap[key].goals += 1
+      })
+    })
+  }
+
+  const hasLiveData = Object.keys(scorerMap).length > 0
+  const topScorers = Object.values(scorerMap).sort((a,b) => b.goals - a.goals)
 
   // Group ones to watch by group
   const byGroup = ONES_TO_WATCH.reduce((acc, p) => {
@@ -84,15 +97,15 @@ export default function GoldenBoot() {
       </div>
 
       <div className={styles.tabs}>
-        <button className={`${styles.tab} ${tab==='live' ? styles.tabActive : ''}`} onClick={() => setTab('live')}>
-          Live Scorers
+        <button className={`${styles.tab} ${tab==='top' ? styles.tabActive : ''}`} onClick={() => setTab('top')}>
+          Top Scorers
         </button>
         <button className={`${styles.tab} ${tab==='watch' ? styles.tabActive : ''}`} onClick={() => setTab('watch')}>
           Ones to Watch
         </button>
       </div>
 
-      {tab === 'live' && (
+      {tab === 'top' && (
         <>
           {loading ? (
             <div className={styles.empty}>
@@ -103,7 +116,7 @@ export default function GoldenBoot() {
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>⚽</div>
               <div className={styles.emptyTitle}>No goals yet</div>
-              <div className={styles.emptySub}>Scorer data updates automatically from completed matches — check back once goals are scored!</div>
+              <div className={styles.emptySub}>Goal totals accumulate automatically as matches are completed across the tournament.</div>
             </div>
           ) : (
             <div className={styles.scorerList}>
@@ -123,12 +136,6 @@ export default function GoldenBoot() {
                         <span className={styles.statNum}>{p.goals}</span>
                         <span className={styles.statLabel}>goals</span>
                       </div>
-                      {p.assists > 0 && (
-                        <div className={styles.statSmall}>
-                          <span>{p.assists}</span>
-                          <span className={styles.statLabel}>ast</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )
