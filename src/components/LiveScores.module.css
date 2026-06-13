@@ -58,3 +58,13 @@
 }
 .possessionHome { background:var(--green); transition:width .4s ease; }
 .possessionAway { background:#1E90FF; transition:width .4s ease; }
+
+.redCards {
+  display:flex; flex-wrap:wrap; gap:8px;
+  font-size:.65rem; color:var(--muted);
+}
+.redCardItem { white-space:nowrap; }
+.redCardTeam {
+  font-family:var(--mono); font-size:.58rem; color:var(--muted2);
+  background:var(--bg3); padding:1px 5px; border-radius:4px; text-transform:uppercase;
+}
