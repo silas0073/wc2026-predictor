@@ -88,13 +88,14 @@ export default async (req) => {
         redCards = detail.redCards
       }
 
-      // Avoid duplicating the minute: shortDetail often already includes
-      // the clock (e.g. "12' - 1st Half"), so just use the half/period label.
-      let periodLabel = status.shortDetail || status.detail || ''
+      // Derive a clean period label (e.g. "1st Half") from the numeric period
+      // rather than string-matching shortDetail/detail, which often embed
+      // the clock using different unicode apostrophe characters and can't
+      // be reliably stripped — causing "12' 12'" duplication.
+      const periodNum = comp?.status?.period
+      const periodNames = { 1: '1st Half', 2: '2nd Half', 3: 'ET 1', 4: 'ET 2', 5: 'Pens' }
+      const periodLabel = periodNames[periodNum] || ''
       const clock = comp?.status?.displayClock || ''
-      if (clock && periodLabel.includes(clock)) {
-        periodLabel = periodLabel.replace(clock, '').replace(/^[\s-]+/, '').trim()
-      }
 
       return {
         id: ev.id,
