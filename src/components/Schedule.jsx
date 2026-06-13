@@ -1,7 +1,40 @@
 import React, { useState } from 'react'
-import { FIXTURES, GROUP_LABELS } from '../data.js'
+import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatAESTDate, formatAEST } from '../utils.js'
+import { matchOdds, formLabel } from '../odds.js'
 import styles from './Schedule.module.css'
+
+function OddsBar({ homeCode, awayCode }) {
+  const { homeWin, draw, awayWin, fav } = matchOdds(homeCode, awayCode)
+  const ht = TEAMS[homeCode], at = TEAMS[awayCode]
+  return (
+    <div className={styles.oddsWrap}>
+      <div className={styles.oddsTeams}>
+        <span className={`${styles.oddsTeamLabel} ${fav==='home' ? styles.oddsFavTeam : ''}`}>
+          {ht?.flag} {homeCode}{fav==='home' ? ' ⭐' : ''}
+        </span>
+        <span className={styles.oddsCentre}>{draw}% draw</span>
+        <span className={`${styles.oddsTeamLabel} ${styles.oddsTeamRight} ${fav==='away' ? styles.oddsFavTeam : ''}`}>
+          {fav==='away' ? '⭐ ' : ''}{awayCode} {at?.flag}
+        </span>
+      </div>
+      <div className={styles.oddsBar}>
+        <div className={styles.oddsHome} style={{ width: homeWin + '%' }} />
+        <div className={styles.oddsDraw} style={{ width: draw + '%' }} />
+        <div className={styles.oddsAway} style={{ width: awayWin + '%' }} />
+      </div>
+      <div className={styles.oddsLabels}>
+        <span className={styles.oddsNum} style={{ color: fav==='home' ? 'var(--green)' : 'var(--muted)' }}>{homeWin}%</span>
+        <span className={styles.oddsNum} style={{ color: fav==='away' ? 'var(--green)' : 'var(--muted)' }}>{awayWin}%</span>
+      </div>
+      <div className={styles.formRow}>
+        <span title="Recent form (last 5)">{formLabel(homeCode)}</span>
+        <span className={styles.formLabel}>form</span>
+        <span title="Recent form (last 5)">{formLabel(awayCode)}</span>
+      </div>
+    </div>
+  )
+}
 
 export default function Schedule({ predictions, fixtures = FIXTURES }) {
   const [filterGroup, setFilterGroup] = useState('ALL')
@@ -113,6 +146,8 @@ export default function Schedule({ predictions, fixtures = FIXTURES }) {
                 </div>
 
                 <div className={styles.venue}>{f.venue}</div>
+
+                {!isPlayed && !isLive && <OddsBar homeCode={f.home} awayCode={f.away} />}
               </div>
             )
           })}
