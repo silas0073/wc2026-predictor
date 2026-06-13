@@ -28,9 +28,11 @@
 }
 
 .match {
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  display:flex; flex-direction:column; gap:6px;
   background: var(--bg2); border: 1px solid rgba(255,68,68,.15);
   border-radius: 8px; padding: 8px 12px; font-size:.8rem;
+}
+.matchTop { display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
 
 .teams { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
@@ -42,3 +44,17 @@
   font-family: var(--mono); font-size:.7rem; color: var(--red);
   font-weight:700; white-space:nowrap; flex-shrink:0;
 }
+
+.possessionWrap { display:flex; flex-direction:column; gap:3px; }
+.possessionLabels {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:.62rem; font-family:var(--mono); color:var(--muted);
+}
+.possessionTitle {
+  font-size:.58rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted2);
+}
+.possessionBar {
+  display:flex; height:5px; border-radius:3px; overflow:hidden; background:var(--bg4);
+}
+.possessionHome { background:var(--green); transition:width .4s ease; }
+.possessionAway { background:#1E90FF; transition:width .4s ease; }
