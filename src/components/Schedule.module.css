@@ -48,3 +48,31 @@
 .liveScoreActive {
   font-family:var(--mono); font-size:1.15rem; font-weight:700; color:var(--red);
 }
+
+/* Odds bar */
+.oddsWrap { margin-top:10px; padding-top:10px; border-top:1px solid rgba(107,128,153,.08); }
+.oddsTeams {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:.65rem; margin-bottom:4px;
+}
+.oddsTeamLabel {
+  font-family:var(--mono); font-weight:600; color:var(--muted);
+  display:flex; align-items:center; gap:3px;
+}
+.oddsTeamRight { text-align:right; }
+.oddsFavTeam { color:var(--green); }
+.oddsCentre { font-size:.6rem; color:var(--muted2); }
+.oddsBar {
+  display:flex; height:4px; border-radius:2px; overflow:hidden;
+  background:var(--bg4); margin-bottom:5px;
+}
+.oddsHome { background:var(--green); transition:width .3s; }
+.oddsDraw  { background:var(--muted2); transition:width .3s; }
+.oddsAway  { background:var(--blue); transition:width .3s; }
+.oddsLabels {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.65rem; margin-bottom:5px;
+}
+.oddsNum { font-family:var(--mono); font-weight:600; }
+.formRow { display:flex; justify-content:space-between; font-size:.7rem; }
+.formLabel { font-size:.58rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
