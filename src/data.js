@@ -69,7 +69,7 @@ export const FIXTURES = [
   { id:'A6', group:'A', md:3, date:'2026-06-25', kickoff:'2026-06-25T01:00Z', home:'RSA', away:'KOR', venue:'Estadio BBVA, Monterrey',              homeScore:null, awayScore:null },
   // GROUP B
   { id:'B1', group:'B', md:1, date:'2026-06-12', kickoff:'2026-06-12T19:00Z', home:'CAN', away:'BIH', venue:'BMO Field, Toronto',                  homeScore:null, awayScore:null },
-  { id:'B2', group:'B', md:1, date:'2026-06-13', kickoff:'2026-06-13T19:00Z', home:'QAT', away:'SUI', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
+  { id:'B2', group:'B', md:1, date:'2026-06-13', kickoff:'2026-06-13T19:00Z', home:'QAT', away:'SUI', venue:"Levi's Stadium, Santa Clara", homeScore:1, awayScore:1, goals:[{name:'Breel Embolo',team:'SUI',minute:"17'",ownGoal:false},{name:'Miro Muheim',team:'QAT',minute:"90+4'",ownGoal:true}], redCards:[] },
   { id:'B3', group:'B', md:2, date:'2026-06-18', kickoff:'2026-06-18T19:00Z', home:'SUI', away:'BIH', venue:'SoFi Stadium, LA',                    homeScore:null, awayScore:null },
   { id:'B4', group:'B', md:2, date:'2026-06-18', kickoff:'2026-06-18T22:00Z', home:'CAN', away:'QAT', venue:'BC Place, Vancouver',                  homeScore:null, awayScore:null },
   { id:'B5', group:'B', md:3, date:'2026-06-24', kickoff:'2026-06-24T19:00Z', home:'SUI', away:'CAN', venue:'BC Place, Vancouver',                  homeScore:null, awayScore:null },
