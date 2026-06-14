@@ -1,20 +1,11 @@
 // Searches YouTube for WC2026 match highlight clips (no API key needed)
 // Scrapes the initial data JSON that YouTube embeds in every search page.
 
-// Channels known to block embeds
-const BLOCKED_CHANNELS = [
-  'fifa', 'fifatv', 'fifa tv',
-  'fox sports', 'foxsports',
-  'telemundo deportes', 'telemundo',
-  'tnt sports', 'sky sports',
-  'bein sports', 'beinsports',
-  'sbs', 'sbs australia',
-  'optus sport',
-]
+const BLOCKED_CHANNELS = ['fifatv', 'fifa']
 
 function isBlocked(channel) {
-  const c = (channel || '').toLowerCase()
-  return BLOCKED_CHANNELS.some(b => c.includes(b))
+  const c = (channel || '').toLowerCase().replace(/\s/g, '')
+  return BLOCKED_CHANNELS.some(b => c === b || c.startsWith(b))
 }
 
 async function searchYouTube(query) {
@@ -27,7 +18,6 @@ async function searchYouTube(query) {
   })
   const html = await res.text()
 
-  // YouTube embeds all search results in a var ytInitialData = {...}; block
   const match = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/)
   if (!match) return null
 
@@ -46,13 +36,11 @@ async function searchYouTube(query) {
       const title = vr.title?.runs?.[0]?.text ?? ''
       const channel = vr.ownerText?.runs?.[0]?.text ?? vr.longBylineText?.runs?.[0]?.text ?? ''
       const duration = vr.lengthText?.simpleText ?? ''
-      // Skip blocked channels (FIFA, broadcasters)
       if (isBlocked(channel)) continue
-      // Skip Shorts (under 1 min) and very long videos (over 15 min)
       const parts = duration.split(':').map(Number)
       const totalMin = parts.length === 3
-        ? parts[0] * 60 + parts[1] + parts[2] / 60  // h:mm:ss
-        : (parts[0] || 0) + (parts[1] || 0) / 60    // mm:ss
+        ? parts[0] * 60 + parts[1] + parts[2] / 60
+        : (parts[0] || 0) + (parts[1] || 0) / 60
       if (totalMin < 1 || totalMin > 15) continue
       return { videoId: vr.videoId, title, duration, channel }
     }
@@ -83,10 +71,7 @@ export default async function handler(req) {
 
   return new Response(JSON.stringify(result ?? { videoId: null }), {
     status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
-    },
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' },
   })
 }
 
