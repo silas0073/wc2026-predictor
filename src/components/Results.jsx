@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
@@ -6,13 +6,13 @@ import styles from './Results.module.css'
 const highlightCache = {}
 
 function useHighlight(fixture) {
-  const [state, setState] = useState({ videoId: null, loading: false, tried: false })
+  const [state, setState] = useState({ candidates: [], loading: false, tried: false })
   const key = fixture.id
 
   useEffect(() => {
     if (fixture.homeScore === null || state.tried) return
     if (highlightCache[key] !== undefined) {
-      setState({ videoId: highlightCache[key], loading: false, tried: true })
+      setState({ candidates: highlightCache[key], loading: false, tried: true })
       return
     }
     setState(s => ({ ...s, loading: true }))
@@ -21,12 +21,13 @@ function useHighlight(fixture) {
     fetch(`/api/highlights?home=${home}&away=${away}&date=${fixture.date}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
-        highlightCache[key] = d.videoId ?? null
-        setState({ videoId: d.videoId ?? null, loading: false, tried: true })
+        const candidates = d.candidates ?? (d.videoId ? [{ videoId: d.videoId }] : [])
+        highlightCache[key] = candidates
+        setState({ candidates, loading: false, tried: true })
       })
       .catch(() => {
-        highlightCache[key] = null
-        setState({ videoId: null, loading: false, tried: true })
+        highlightCache[key] = []
+        setState({ candidates: [], loading: false, tried: true })
       })
   }, [fixture.homeScore])
 
@@ -34,7 +35,12 @@ function useHighlight(fixture) {
 }
 
 function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
-  const { videoId, loading } = useHighlight(fixture)
+  const { candidates, loading } = useHighlight(fixture)
+  const [idx, setIdx] = useState(0)
+  const iframeRef = useRef(null)
+
+  // Reset candidate index when closed
+  useEffect(() => { if (!isOpen) setIdx(0) }, [isOpen])
 
   if (loading) return (
     <div className={styles.highlightRow}>
@@ -42,7 +48,14 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
     </div>
   )
 
-  if (!videoId) return null
+  if (!candidates.length) return null
+
+  const videoId = candidates[idx]?.videoId
+
+  const tryNext = () => {
+    if (idx + 1 < candidates.length) setIdx(i => i + 1)
+    else onClose() // all exhausted, give up
+  }
 
   return (
     <div className={styles.highlightRow}>
@@ -54,14 +67,22 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
         <>
           <div className={styles.embedWrap}>
             <iframe
+              key={videoId}
+              ref={iframeRef}
               src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
               title="Match highlights"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className={styles.embed}
+              onError={tryNext}
             />
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>✕ Close</button>
+          <div className={styles.highlightActions}>
+            <button className={styles.closeBtn} onClick={onClose}>✕ Close</button>
+            {candidates.length > 1 && idx + 1 < candidates.length && (
+              <button className={styles.nextBtn} onClick={tryNext}>↻ Try another</button>
+            )}
+          </div>
         </>
       )}
     </div>
