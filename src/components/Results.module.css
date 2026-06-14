@@ -127,3 +127,25 @@
   background: rgba(255,255,255,.08);
   color: var(--muted);
 }
+
+.highlightActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.nextBtn {
+  flex: 1;
+  padding: 6px 14px;
+  background: rgba(245,197,24,.08);
+  border: 1px solid rgba(245,197,24,.2);
+  border-radius: 8px;
+  color: var(--gold);
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.nextBtn:hover {
+  background: rgba(245,197,24,.15);
+}
