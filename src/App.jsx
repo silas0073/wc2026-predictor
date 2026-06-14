@@ -20,18 +20,18 @@ const BRACKET_KEY = 'wc2026_bracket'
 const VALID_IDS = new Set(FIXTURES.map(f => f.id))
 
 const TABS = [
+  { id: 'results',   label: 'Results',   icon: '🏁' },
+  { id: 'schedule',  label: 'Schedule',  icon: '📅' },
+  { id: 'table',     label: 'Standings', icon: '📊' },
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
   { id: 'bracket',   label: 'Bracket',   icon: '🏆' },
   { id: 'ai',        label: 'AI Picks',  icon: '🤖' },
-  { id: 'schedule',  label: 'Schedule',  icon: '📅' },
-  { id: 'results',   label: 'Results',   icon: '🏁' },
-  { id: 'table',     label: 'Standings', icon: '📊' },
   { id: 'golden',    label: 'Top Scorers', icon: '🥾' },
   { id: 'teams',     label: 'Teams', icon: '🌍' },
 ]
 
 export default function App() {
-  const [tab, setTab] = useState('predictor')
+  const [tab, setTab] = useState('results')
   const { fixtures: liveFixtures } = useLiveResults()
 
   const [predictions, setPredictions] = useState(() => {
