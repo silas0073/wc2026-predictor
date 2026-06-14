@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './LiveScores.module.css'
 
-// Map ESPN abbreviations to our team codes where they differ
-const CODE_MAP = {
-  'RSA': 'RSA', 'MEX': 'MEX', 'KOR': 'KOR', 'CZE': 'CZE',
-  'CAN': 'CAN', 'BIH': 'BIH', 'SUI': 'SUI', 'QAT': 'QAT',
-  'BRA': 'BRA', 'MAR': 'MAR', 'SCO': 'SCO', 'HAI': 'HAI',
-  'USA': 'USA', 'AUS': 'AUS', 'PAR': 'PAR', 'TUR': 'TUR',
-  'GER': 'GER', 'ECU': 'ECU', 'CIV': 'CIV', 'CUW': 'CUW',
-  'NED': 'NED', 'JPN': 'JPN', 'SWE': 'SWE', 'TUN': 'TUN',
-  'BEL': 'BEL', 'EGY': 'EGY', 'IRN': 'IRN', 'NZL': 'NZL',
-  'ESP': 'ESP', 'URU': 'URU', 'KSA': 'SAU', 'CPV': 'CPV',
-  'FRA': 'FRA', 'SEN': 'SEN', 'NOR': 'NOR', 'IRQ': 'IRQ',
-  'ARG': 'ARG', 'AUT': 'AUT', 'ALG': 'ALG', 'JOR': 'JOR',
-  'POR': 'POR', 'COL': 'COL', 'UZB': 'UZB', 'COD': 'COD',
-  'ENG': 'ENG', 'CRO': 'CRO', 'PAN': 'PAN', 'GHA': 'GHA',
-}
-
 export default function LiveScores() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
@@ -34,22 +18,14 @@ export default function LiveScores() {
       }
     }
     fetchScores()
-    const interval = setInterval(fetchScores, 60000) // poll every 60s
-
+    const interval = setInterval(fetchScores, 60000)
     const onVisible = () => { if (document.visibilityState === 'visible') fetchScores() }
     document.addEventListener('visibilitychange', onVisible)
-
-    return () => {
-      mounted = false
-      clearInterval(interval)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
+    return () => { mounted = false; clearInterval(interval); document.removeEventListener('visibilitychange', onVisible) }
   }, [])
 
   if (error || !data) return null
-
   const liveMatches = (data.events || []).filter(ev => ev.status === 'in')
-
   if (liveMatches.length === 0) return null
 
   return (
@@ -63,19 +39,27 @@ export default function LiveScores() {
         <div className={styles.matches}>
           {liveMatches.map(ev => {
             const hasPossession = ev.home.possession != null && ev.away.possession != null
+            const allEvents = [
+              ...(ev.goals || []).map(g => ({ ...g, kind: 'goal' })),
+              ...(ev.redCards || []).map(r => ({ ...r, kind: 'red' })),
+            ].sort((a, b) => {
+              const n = m => { const x = (m||'').match(/(\d+)/); return x ? parseInt(x[1],10) : 999 }
+              return n(a.minute) - n(b.minute)
+            })
+
             return (
               <div key={ev.id} className={styles.match}>
                 <div className={styles.matchTop}>
-                <div className={styles.teams}>
-                  <span className={`${styles.team} ${ev.home.winner ? styles.winning : ''}`}>
-                    {ev.home.name} <span className={styles.score}>{ev.home.score}</span>
-                  </span>
-                  <span className={styles.sep}>–</span>
-                  <span className={`${styles.team} ${ev.away.winner ? styles.winning : ''}`}>
-                    <span className={styles.score}>{ev.away.score}</span> {ev.away.name}
-                  </span>
-                </div>
-                <span className={styles.clock}>{ev.clock} {ev.statusDetail}</span>
+                  <div className={styles.teams}>
+                    <span className={`${styles.team} ${ev.home.winner ? styles.winning : ''}`}>
+                      {ev.home.name} <span className={styles.score}>{ev.home.score}</span>
+                    </span>
+                    <span className={styles.sep}>–</span>
+                    <span className={`${styles.team} ${ev.away.winner ? styles.winning : ''}`}>
+                      <span className={styles.score}>{ev.away.score}</span> {ev.away.name}
+                    </span>
+                  </div>
+                  <span className={styles.clock}>{ev.clock} {ev.statusDetail}</span>
                 </div>
 
                 {hasPossession && (
@@ -92,12 +76,16 @@ export default function LiveScores() {
                   </div>
                 )}
 
-                {ev.redCards?.length > 0 && (
-                  <div className={styles.redCards}>
-                    {ev.redCards.map((r, i) => (
-                      <span key={i} className={styles.redCardItem}>
-                        🟥 {r.name} <span className={styles.redCardTeam}>{r.team}</span>{r.minute ? ` ${r.minute}` : ''}
-                      </span>
+                {allEvents.length > 0 && (
+                  <div className={styles.events}>
+                    {allEvents.map((e, i) => (
+                      <div key={i} className={styles.eventItem}>
+                        <span className={styles.eventIcon}>{e.kind === 'goal' ? '⚽' : '🟥'}</span>
+                        <span className={styles.eventText}>
+                          {e.name}{e.ownGoal ? ' (OG)' : ''}{e.minute ? ` ${e.minute}` : ''}
+                        </span>
+                        <span className={styles.eventTeam}>{e.team}</span>
+                      </div>
                     ))}
                   </div>
                 )}
