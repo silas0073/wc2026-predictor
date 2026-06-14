@@ -107,3 +107,23 @@
   border: none;
   border-radius: 8px;
 }
+
+.closeBtn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  color: var(--muted2);
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.closeBtn:hover {
+  background: rgba(255,255,255,.08);
+  color: var(--muted);
+}
