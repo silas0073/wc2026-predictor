@@ -1,7 +1,71 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { FIXTURES, GROUP_LABELS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
+
+// Cache highlight lookups in memory for the session
+const highlightCache = {}
+
+function useHighlight(fixture) {
+  const [state, setState] = useState({ videoId: null, loading: false, tried: false })
+  const key = fixture.id
+
+  useEffect(() => {
+    if (fixture.homeScore === null || state.tried) return
+    if (highlightCache[key] !== undefined) {
+      setState({ videoId: highlightCache[key], loading: false, tried: true })
+      return
+    }
+    setState(s => ({ ...s, loading: true }))
+    const home = encodeURIComponent(fixture.home)
+    const away = encodeURIComponent(fixture.away)
+    fetch(`/api/highlights?home=${home}&away=${away}&date=${fixture.date}`, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        highlightCache[key] = d.videoId ?? null
+        setState({ videoId: d.videoId ?? null, loading: false, tried: true })
+      })
+      .catch(() => {
+        highlightCache[key] = null
+        setState({ videoId: null, loading: false, tried: true })
+      })
+  }, [fixture.homeScore])
+
+  return state
+}
+
+function HighlightEmbed({ fixture }) {
+  const { videoId, loading } = useHighlight(fixture)
+  const [expanded, setExpanded] = useState(false)
+
+  if (loading) return (
+    <div className={styles.highlightRow}>
+      <span className={styles.highlightLoading}>🎬 Loading highlights…</span>
+    </div>
+  )
+
+  if (!videoId) return null
+
+  return (
+    <div className={styles.highlightRow}>
+      {!expanded ? (
+        <button className={styles.highlightBtn} onClick={() => setExpanded(true)}>
+          ▶ Watch Highlights
+        </button>
+      ) : (
+        <div className={styles.embedWrap}>
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+            title="Match highlights"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className={styles.embed}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Results({ predictions = {}, fixtures = FIXTURES }) {
   const [filterGroup, setFilterGroup] = useState('ALL')
@@ -119,6 +183,8 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                     </div>
                   )
                 })()}
+
+                <HighlightEmbed fixture={f} />
               </div>
             )
           })}
