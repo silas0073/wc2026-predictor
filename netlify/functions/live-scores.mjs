@@ -37,7 +37,6 @@ function extractRedCards(summary, teamAbbrevById) {
   return redCards
 }
 
-// Fetch extra match detail (possession + red cards) for in-progress matches
 async function fetchMatchDetail(eventId, teamAbbrevById) {
   try {
     const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`)
@@ -54,19 +53,53 @@ async function fetchMatchDetail(eventId, teamAbbrevById) {
     })
 
     const redCards = extractRedCards(summary, teamAbbrevById)
-
     return { possession, redCards }
   } catch {
     return { possession: {}, redCards: [] }
   }
 }
 
+function getDateStrings() {
+  // Return today + yesterday + tomorrow in YYYYMMDD to catch UTC edge cases
+  const dates = []
+  const now = new Date()
+  for (let d = -1; d <= 1; d++) {
+    const dt = new Date(now)
+    dt.setDate(dt.getDate() + d)
+    dates.push(dt.toISOString().slice(0,10).replace(/-/g,''))
+  }
+  return dates
+}
+
+async function fetchEventsForDate(dateStr) {
+  try {
+    const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}&limit=20`)
+    const data = await res.json()
+    return data.events || []
+  } catch {
+    return []
+  }
+}
+
 export default async (req) => {
   try {
-    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard')
-    const data = await res.json()
+    // Fetch yesterday/today/tomorrow to handle UTC timezone edge cases
+    const dates = getDateStrings()
+    const allEventArrays = await Promise.all(dates.map(fetchEventsForDate))
 
-    const events = await Promise.all((data.events || []).map(async ev => {
+    // Deduplicate by event id
+    const seen = new Set()
+    const allEvents = []
+    for (const evArr of allEventArrays) {
+      for (const ev of evArr) {
+        if (!seen.has(ev.id)) {
+          seen.add(ev.id)
+          allEvents.push(ev)
+        }
+      }
+    }
+
+    const events = await Promise.all(allEvents.map(async ev => {
       const comp = ev.competitions?.[0]
       const competitors = comp?.competitors || []
       const home = competitors.find(c => c.homeAway === 'home')
@@ -88,10 +121,6 @@ export default async (req) => {
         redCards = detail.redCards
       }
 
-      // Derive a clean period label (e.g. "1st Half") from the numeric period
-      // rather than string-matching shortDetail/detail, which often embed
-      // the clock using different unicode apostrophe characters and can't
-      // be reliably stripped — causing "12' 12'" duplication.
       const periodNum = comp?.status?.period
       const periodNames = { 1: '1st Half', 2: '2nd Half', 3: 'ET 1', 4: 'ET 2', 5: 'Pens' }
       const periodLabel = periodNames[periodNum] || ''
@@ -100,7 +129,7 @@ export default async (req) => {
       return {
         id: ev.id,
         date: ev.date,
-        status: status.state,        // 'pre', 'in', 'post'
+        status: status.state,
         statusDetail: periodLabel,
         clock,
         period: comp?.status?.period,
@@ -124,10 +153,7 @@ export default async (req) => {
 
     return new Response(JSON.stringify({ events, updated: new Date().toISOString() }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-      },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message, events: [] }), {
