@@ -1,7 +1,8 @@
 // Proxies ESPN's public World Cup scoreboard for live scores, including
-// possession % and red cards for matches currently in progress.
+// possession %, goal scorers and red cards for matches in progress.
 
-function extractRedCards(summary, teamAbbrevById) {
+function extractEvents(summary, teamAbbrevById) {
+  const goals = []
   const redCards = []
   const seen = new Set()
 
@@ -15,26 +16,38 @@ function extractRedCards(summary, teamAbbrevById) {
   candidates.forEach(list => {
     list.forEach(k => {
       const typeText = (k.type?.text || k.type?.id || k.text || '').toString()
-      if (!/red card/i.test(typeText)) return
-
       const teamId = k.team?.id != null ? String(k.team.id) : null
       const teamCode = teamId ? teamAbbrevById[teamId] : null
       if (!teamCode) return
 
-      const minute = k.clock?.displayValue || (k.clock?.value != null ? `${Math.floor(k.clock.value / 60)}'` : '')
+      const minute = k.clock?.displayValue || (k.clock?.value != null ? `${Math.floor(k.clock.value / 60)}'` : null)
       const athletes = k.athletesInvolved || k.participants?.map(p => p.athlete).filter(Boolean) || []
-      const name = athletes[0]?.displayName || athletes[0]?.shortName || athletes[0]?.name
-      if (!name) return
+      const main = athletes[0]
+      const mainName = main?.displayName || main?.shortName || main?.name
 
-      const dedupeKey = `${typeText}-${teamId}-${name}-${k.clock?.value ?? k.time ?? ''}`
+      const dedupeKey = `${typeText}-${teamId}-${mainName}-${k.clock?.value ?? k.time ?? ''}`
       if (seen.has(dedupeKey)) return
-      seen.add(dedupeKey)
 
-      redCards.push({ name, team: teamCode, minute })
+      if (/goal/i.test(typeText) && !/own.?goal|disallowed|var/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        goals.push({ name: mainName, team: teamCode, minute: minute || '', ownGoal: false })
+      } else if (/own.?goal/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        goals.push({ name: mainName, team: teamCode, minute: minute || '', ownGoal: true })
+      } else if (/red card/i.test(typeText)) {
+        if (!mainName) return
+        seen.add(dedupeKey)
+        redCards.push({ name: mainName, team: teamCode, minute: minute || '' })
+      }
     })
   })
 
-  return redCards
+  const minuteNum = (m) => { const match = (m || '').match(/(\d+)/); return match ? parseInt(match[1], 10) : 999 }
+  goals.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+  redCards.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+  return { goals, redCards }
 }
 
 async function fetchMatchDetail(eventId, teamAbbrevById) {
@@ -52,15 +65,14 @@ async function fetchMatchDetail(eventId, teamAbbrevById) {
       }
     })
 
-    const redCards = extractRedCards(summary, teamAbbrevById)
-    return { possession, redCards }
+    const { goals, redCards } = extractEvents(summary, teamAbbrevById)
+    return { possession, goals, redCards }
   } catch {
-    return { possession: {}, redCards: [] }
+    return { possession: {}, goals: [], redCards: [] }
   }
 }
 
 function getDateStrings() {
-  // Return today + yesterday + tomorrow in YYYYMMDD to catch UTC edge cases
   const dates = []
   const now = new Date()
   for (let d = -1; d <= 1; d++) {
@@ -83,19 +95,14 @@ async function fetchEventsForDate(dateStr) {
 
 export default async (req) => {
   try {
-    // Fetch yesterday/today/tomorrow to handle UTC timezone edge cases
     const dates = getDateStrings()
     const allEventArrays = await Promise.all(dates.map(fetchEventsForDate))
 
-    // Deduplicate by event id
     const seen = new Set()
     const allEvents = []
     for (const evArr of allEventArrays) {
       for (const ev of evArr) {
-        if (!seen.has(ev.id)) {
-          seen.add(ev.id)
-          allEvents.push(ev)
-        }
+        if (!seen.has(ev.id)) { seen.add(ev.id); allEvents.push(ev) }
       }
     }
 
@@ -114,10 +121,12 @@ export default async (req) => {
       }
 
       let possession = {}
+      let goals = []
       let redCards = []
       if (status.state === 'in') {
         const detail = await fetchMatchDetail(ev.id, teamAbbrevById)
         possession = detail.possession
+        goals = detail.goals
         redCards = detail.redCards
       }
 
@@ -133,6 +142,7 @@ export default async (req) => {
         statusDetail: periodLabel,
         clock,
         period: comp?.status?.period,
+        goals,
         redCards,
         home: {
           code: home?.team?.abbreviation,
