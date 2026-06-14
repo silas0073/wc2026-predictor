@@ -1,6 +1,6 @@
 {
   "name": "wc2026-predictor",
-  "version": "2.16.4",
+  "version": "2.16.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
