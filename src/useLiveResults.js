@@ -42,13 +42,18 @@ export function useLiveResults() {
     const live = liveResults[`${f.home}-${f.away}`]
     if (!live) return f // no live data yet, keep static (data.js) values
 
-    // If live match is finished, use live score
+    // If data.js has goals manually set, use as full override — skip ESPN scorers
+    if (f.goals?.length) {
+      return { ...f, liveStatus: live.status }
+    }
+
+    // If live match is finished, use live score + scorers
     if (live.status === 'post') {
-      return { ...f, homeScore: live.homeScore, awayScore: live.awayScore, liveStatus: 'post', goals: f.goals?.length ? f.goals : (live.goals || []), redCards: f.redCards?.length ? f.redCards : (live.redCards || []) }
+      return { ...f, homeScore: live.homeScore, awayScore: live.awayScore, liveStatus: 'post', goals: live.goals || [], redCards: live.redCards || [] }
     }
     // If in progress, expose live status but don't set final score
     if (live.status === 'in') {
-      return { ...f, liveStatus: 'in', liveHomeScore: live.homeScore, liveAwayScore: live.awayScore, liveClock: live.clock, liveDetail: live.statusDetail, goals: f.goals?.length ? f.goals : (live.goals || []), redCards: f.redCards?.length ? f.redCards : (live.redCards || []) }
+      return { ...f, liveStatus: 'in', liveHomeScore: live.homeScore, liveAwayScore: live.awayScore, liveClock: live.clock, liveDetail: live.statusDetail, goals: live.goals || [], redCards: live.redCards || [] }
     }
     return f
   })
