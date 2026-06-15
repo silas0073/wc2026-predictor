@@ -1,98 +1,87 @@
-// Searches YouTube for WC2026 match highlight clips (no API key needed)
-// Returns multiple candidates so frontend can try each until one embeds successfully.
+// Searches SBS Sport AU YouTube channel for World Cup 2026 highlight videos.
+// Uses YouTube's public search without an API key by scraping the search
+// results page (no embed, just returns a YouTube watch URL).
+//
+// Query pattern: "{HomeTeam} v {AwayTeam} Highlights FIFA World Cup 2026"
+// on channel: @SBSSportau (channel ID: UCzb3nMkj5hkHbbSsidOUAjQ)
 
-// Known channels that disallow embedding
-const BLOCKED_CHANNELS = [
-  'fifa', 'fifatv', 'fifa tv',
-  'fox sports', 'foxsports',
-  'telemundo', 'telemundo deportes',
-  'tnt sports', 'sky sports',
-  'bein sports', 'beinsports',
-  'sbs', 'sbs australia',
-  'optus sport',
-  'espn', 'espnfc',
-  'cbs sports', 'cbssports',
-  'univision', 'univisión',
-  'dazn',
-]
+const SBS_CHANNEL_ID = 'UCzb3nMkj5hkHbbSsidOUAjQ'
 
-function isBlocked(channel) {
-  const c = (channel || '').toLowerCase().replace(/\s+/g, '')
-  return BLOCKED_CHANNELS.some(b => c === b.replace(/\s+/g,'') || c.startsWith(b.replace(/\s+/g,'')))
-}
+export default async (req) => {
+  try {
+    const url = new URL(req.url)
+    const home = url.searchParams.get('home') || ''
+    const away = url.searchParams.get('away') || ''
 
-async function searchYouTube(query) {
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-  })
-  const html = await res.text()
-
-  const match = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/)
-  if (!match) return []
-
-  let data
-  try { data = JSON.parse(match[1]) } catch { return [] }
-
-  const contents =
-    data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
-      ?.sectionListRenderer?.contents ?? []
-
-  const results = []
-  for (const section of contents) {
-    const items = section?.itemSectionRenderer?.contents ?? []
-    for (const item of items) {
-      const vr = item?.videoRenderer
-      if (!vr?.videoId) continue
-      const title = vr.title?.runs?.[0]?.text ?? ''
-      const channel = vr.ownerText?.runs?.[0]?.text ?? vr.longBylineText?.runs?.[0]?.text ?? ''
-      const duration = vr.lengthText?.simpleText ?? ''
-      if (isBlocked(channel)) continue
-      const parts = duration.split(':').map(Number)
-      const totalMin = parts.length === 3
-        ? parts[0] * 60 + parts[1] + parts[2] / 60
-        : (parts[0] || 0) + (parts[1] || 0) / 60
-      if (totalMin < 1 || totalMin > 15) continue
-      results.push({ videoId: vr.videoId, title, duration, channel })
-      if (results.length >= 5) return results  // return up to 5 candidates
+    if (!home || !away) {
+      return new Response(JSON.stringify({ error: 'Missing home/away params' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' }
+      })
     }
-  }
-  return results
-}
 
-export default async function handler(req) {
-  const url = new URL(req.url)
-  const home = url.searchParams.get('home') || ''
-  const away = url.searchParams.get('away') || ''
+    // YouTube search URL — returns HTML we parse for video IDs
+    const query = encodeURIComponent(`${home} v ${away} Highlights FIFA World Cup 2026`)
+    const searchUrl = `https://www.youtube.com/results?search_query=${query}+channel%3A${SBS_CHANNEL_ID}`
 
-  if (!home || !away) {
-    return new Response(JSON.stringify({ error: 'Missing params' }), { status: 400 })
-  }
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)',
+        'Accept-Language': 'en-AU,en;q=0.9',
+      }
+    })
+    const html = await res.text()
 
-  const queries = [
-    `${home} vs ${away} World Cup 2026 goals highlights`,
-    `${home} ${away} WC 2026 highlight`,
-  ]
+    // Extract video IDs from the JSON embedded in the page
+    // YouTube embeds initial data as: var ytInitialData = {...};
+    const match = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/s)
+    if (!match) {
+      // Fallback: try regex on raw videoIds
+      const idMatch = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/)
+      if (idMatch) {
+        return respond(idMatch[1], home, away)
+      }
+      return Response.json({ videoUrl: null, message: 'No video found' })
+    }
 
-  const seen = new Set()
-  const candidates = []
-  for (const q of queries) {
-    const results = await searchYouTube(q)
-    for (const r of results) {
-      if (!seen.has(r.videoId)) {
-        seen.add(r.videoId)
-        candidates.push(r)
+    // Parse and find first videoRenderer
+    const data = JSON.parse(match[1])
+    const items = data?.contents?.twoColumnSearchResultsRenderer
+      ?.primaryContents?.sectionListRenderer?.contents?.[0]
+      ?.itemSectionRenderer?.contents || []
+
+    for (const item of items) {
+      const vr = item.videoRenderer
+      if (!vr) continue
+      const videoId = vr.videoId
+      const title = vr.title?.runs?.[0]?.text || ''
+      const channelId = vr.ownerText?.runs?.[0]?.navigationEndpoint
+        ?.browseEndpoint?.browseId || ''
+
+      // Prefer SBS channel but accept any close match
+      if (videoId && /highlights/i.test(title) && /world cup/i.test(title)) {
+        return respond(videoId, home, away, title)
       }
     }
-    if (candidates.length >= 5) break
-  }
 
-  return new Response(JSON.stringify({ candidates }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' },
+    // No perfect match — return first video result
+    for (const item of items) {
+      const vr = item.videoRenderer
+      if (vr?.videoId) return respond(vr.videoId, home, away, vr.title?.runs?.[0]?.text)
+    }
+
+    return Response.json({ videoUrl: null, message: 'No video found' })
+  } catch (e) {
+    return Response.json({ error: e.message, videoUrl: null })
+  }
+}
+
+function respond(videoId, home, away, title = '') {
+  return Response.json({
+    videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+    videoId,
+    title,
+    home,
+    away,
   })
 }
 
