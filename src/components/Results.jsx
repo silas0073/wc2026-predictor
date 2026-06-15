@@ -1,22 +1,67 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-function HighlightLink({ homeCode, awayCode }) {
+function HighlightCard({ homeCode, awayCode }) {
+  const [state, setState] = useState('idle') // idle | loading | found | notfound
+  const [video, setVideo] = useState(null)
+
   const home = TEAMS[homeCode]?.name || homeCode
   const away = TEAMS[awayCode]?.name || awayCode
-  const query = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
-  const url = `https://www.youtube.com/results?search_query=${query}`
+
+  useEffect(() => {
+    let mounted = true
+    const fetchHighlight = async () => {
+      setState('loading')
+      try {
+        const res = await fetch(`/api/highlights?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`)
+        const data = await res.json()
+        if (mounted) {
+          if (data.videoId) {
+            setVideo(data)
+            setState('found')
+          } else {
+            setState('notfound')
+          }
+        }
+      } catch {
+        if (mounted) setState('notfound')
+      }
+    }
+    fetchHighlight()
+    return () => { mounted = false }
+  }, [homeCode, awayCode])
+
+  if (state === 'loading') return (
+    <div className={styles.highlightCard}>
+      <div className={styles.thumbPlaceholder}>
+        <span className={styles.thumbLoading}>Loading…</span>
+      </div>
+    </div>
+  )
+
+  if (state === 'notfound' || state === 'idle') return null
 
   return (
     <a
-      href={url}
+      href={video.videoUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className={styles.highlightBtn}
+      className={styles.highlightCard}
     >
-      ▶ Watch highlights
+      <div className={styles.thumbWrap}>
+        {video.thumbnail ? (
+          <img src={video.thumbnail} alt="Highlights" className={styles.thumb} />
+        ) : (
+          <div className={styles.thumbPlaceholder} />
+        )}
+        <div className={styles.playOverlay}>▶</div>
+      </div>
+      <div className={styles.highlightMeta}>
+        <span className={styles.highlightTitle}>{video.title}</span>
+        <span className={styles.highlightChannel}>{video.channel}</span>
+      </div>
     </a>
   )
 }
@@ -137,7 +182,7 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                     </div>
                   )
                 })()}
-                <HighlightLink homeCode={f.home} awayCode={f.away} />
+                <HighlightCard homeCode={f.home} awayCode={f.away} />
               </div>
             )
           })}
