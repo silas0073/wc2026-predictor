@@ -3,14 +3,24 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
+// Cache highlight results at module level — survives component re-renders
+// caused by parent live-data polling, preventing the "load then hide" issue
+const highlightCache = {}
+
 function HighlightCard({ homeCode, awayCode }) {
-  const [state, setState] = useState('idle') // idle | loading | found | notfound
-  const [video, setVideo] = useState(null)
+  const cacheKey = `${homeCode}-${awayCode}`
+  const [state, setState] = useState(() => highlightCache[cacheKey] ? 'found' : 'idle')
+  const [video, setVideo] = useState(() => highlightCache[cacheKey] || null)
 
   const home = TEAMS[homeCode]?.name || homeCode
   const away = TEAMS[awayCode]?.name || awayCode
 
   useEffect(() => {
+    if (highlightCache[cacheKey]) {
+      setVideo(highlightCache[cacheKey])
+      setState('found')
+      return
+    }
     let mounted = true
     const fetchHighlight = async () => {
       setState('loading')
@@ -19,6 +29,7 @@ function HighlightCard({ homeCode, awayCode }) {
         const data = await res.json()
         if (mounted) {
           if (data.videoId) {
+            highlightCache[cacheKey] = data
             setVideo(data)
             setState('found')
           } else {
@@ -31,7 +42,7 @@ function HighlightCard({ homeCode, awayCode }) {
     }
     fetchHighlight()
     return () => { mounted = false }
-  }, [homeCode, awayCode])
+  }, [cacheKey])
 
   if (state === 'loading') return (
     <div className={styles.highlightCard}>
