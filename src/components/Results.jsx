@@ -29,8 +29,21 @@ function HighlightCard({ homeCode, awayCode }) {
         const data = await res.json()
         if (mounted) {
           if (data.videoId) {
+            // Full result with thumbnail
             highlightCache[cacheKey] = data
             setVideo(data)
+            setState('found')
+          } else if (data.searchUrl || data.fallback) {
+            // API error fallback — show a plain search link
+            const fallbackData = {
+              videoUrl: data.searchUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(home + ' ' + away + ' highlights World Cup 2026 SBS Sport')}`,
+              title: `${home} vs ${away} — highlights`,
+              thumbnail: null,
+              channel: 'SBS Sport (search)',
+              fallback: true,
+            }
+            highlightCache[cacheKey] = fallbackData
+            setVideo(fallbackData)
             setState('found')
           } else {
             setState('notfound')
@@ -45,14 +58,17 @@ function HighlightCard({ homeCode, awayCode }) {
   }, [cacheKey])
 
   if (state === 'loading') return (
-    <div className={styles.highlightCard}>
-      <div className={styles.thumbPlaceholder}>
-        <span className={styles.thumbLoading}>Loading…</span>
-      </div>
-    </div>
+    <div className={styles.highlightLoading}>Loading highlights…</div>
   )
 
   if (state === 'notfound' || state === 'idle') return null
+
+  // Fallback: no thumbnail, just a link
+  if (video.fallback || !video.thumbnail) return (
+    <a href={video.videoUrl} target="_blank" rel="noopener noreferrer" className={styles.highlightFallback}>
+      ▶ Watch highlights on YouTube
+    </a>
+  )
 
   return (
     <a
