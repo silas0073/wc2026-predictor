@@ -1,7 +1,7 @@
 // YouTube Data API v3 search for match highlights
 // API key stored in YOUTUBE_API_KEY env var (set in Netlify dashboard)
 
-const SBS_CHANNEL_ID = 'UCzb3nMkj5hkHbbSsidOUAjQ'
+const SBS_CHANNEL_ID = 'UCn6UMS98Ox-B3jkSWlweJ2w'
 
 export default async (req) => {
   try {
