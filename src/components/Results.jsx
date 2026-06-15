@@ -1,40 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
 function HighlightLink({ homeCode, awayCode }) {
-  const [state, setState] = useState('idle') // idle | loading | found | notfound
-  const [url, setUrl] = useState(null)
+  const home = TEAMS[homeCode]?.name || homeCode
+  const away = TEAMS[awayCode]?.name || awayCode
+  const query = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
+  const url = `https://www.youtube.com/results?search_query=${query}`
 
-  const fetch_ = async () => {
-    setState('loading')
-    try {
-      const home = TEAMS[homeCode]?.name || homeCode
-      const away = TEAMS[awayCode]?.name || awayCode
-      const res = await fetch(`/api/highlights?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`)
-      const data = await res.json()
-      if (data.videoUrl) {
-        setUrl(data.videoUrl)
-        setState('found')
-      } else {
-        setState('notfound')
-      }
-    } catch {
-      setState('notfound')
-    }
-  }
-
-  if (state === 'idle') return (
-    <button className={styles.highlightBtn} onClick={fetch_}>▶ Watch highlights</button>
-  )
-  if (state === 'loading') return <span className={styles.highlightLoading}>Finding highlights…</span>
-  if (state === 'found') return (
-    <a className={styles.highlightLink} href={url} target="_blank" rel="noopener noreferrer">
-      ▶ Watch highlights on YouTube (SBS Sport)
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={styles.highlightBtn}
+    >
+      ▶ Watch highlights
     </a>
   )
-  return <span className={styles.highlightNone}>No highlights found</span>
 }
 
 export default function Results({ predictions = {}, fixtures = FIXTURES }) {
