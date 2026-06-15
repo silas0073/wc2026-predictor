@@ -108,3 +108,10 @@
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
 }
 .highlightChannel { font-size:.62rem; color:#FF0000; font-weight:600; }
+
+.highlightLoading { font-size:.68rem; color:var(--muted2); margin-top:8px; font-style:italic; }
+.highlightFallback {
+  display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+  font-size:.72rem; font-weight:600; color:#FF0000; text-decoration:none;
+}
+.highlightFallback:hover { opacity:.75; }
