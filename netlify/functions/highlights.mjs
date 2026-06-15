@@ -15,10 +15,16 @@ export default async (req) => {
       })
     }
 
-    // Try env var first, fall back to hardcoded (temporary)
+    // Get API key from environment variable
     const key = (typeof Netlify !== 'undefined' && Netlify.env?.get('YOUTUBE_API_KEY'))
       || process.env.YOUTUBE_API_KEY
-      || 'AIzaSyCUPKrUfI8JRAGxbntn5QwX5BxslbDFRo'
+
+    if (!key) {
+      const searchUrl = `https://www.youtube.com/results?search_query=${q}+SBS+Sport`
+      return new Response(JSON.stringify({ searchUrl, fallback: true, apiError: 'No API key configured' }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      })
+    }
 
     const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
 
