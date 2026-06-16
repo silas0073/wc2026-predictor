@@ -1,9 +1,109 @@
 // YouTube Data API v3 search for match highlights
 // API key stored in YOUTUBE_API_KEY env var (set in Netlify dashboard)
 
-const SBS_CHANNEL_ID = 'UCn6UMS98Ox-B3jkSWlweJ2w'
+// Resolve SBS Sport channel ID dynamically using the handle
+async function getSBSChannelId(key) {
+  const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=SBSSportau&key=${key}`)
+  const data = await res.json()
+  return data.items?.[0]?.id || null
+}
 
 export default async (req) => {
+  try {
+    const url = new URL(req.url)
+    const home = url.searchParams.get('home') || ''
+    const away = url.searchParams.get('away') || ''
+
+    if (!home || !away) {
+      return new Response(JSON.stringify({ error: 'Missing home/away params' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    const key = (typeof Netlify !== 'undefined' && Netlify.env?.get('YOUTUBE_API_KEY'))
+      || process.env.YOUTUBE_API_KEY
+
+    if (!key) {
+      const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
+      return new Response(JSON.stringify({ searchUrl: `https://www.youtube.com/results?search_query=${q}`, fallback: true }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
+
+    // Resolve the real SBS channel ID via handle
+    const sbsChannelId = await getSBSChannelId(key)
+
+    if (sbsChannelId) {
+      const sbsUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${sbsChannelId}&q=${q}&type=video&maxResults=5&order=date&key=${key}`
+      const sbsRes = await fetch(sbsUrl)
+      const sbsData = await sbsRes.json()
+      const sbsItems = sbsData.items || []
+      const sbsMatch = sbsItems.find(item =>
+        /highlight/i.test(item.snippet?.title || '') ||
+        /world.?cup/i.test(item.snippet?.title || '')
+      ) || sbsItems[0]
+
+      if (sbsMatch?.id?.videoId) {
+        const videoId = sbsMatch.id.videoId
+        return new Response(JSON.stringify({
+          videoId,
+          videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+          title: sbsMatch.snippet?.title,
+          thumbnail: sbsMatch.snippet?.thumbnails?.medium?.url || sbsMatch.snippet?.thumbnails?.default?.url,
+          channel: sbsMatch.snippet?.channelTitle,
+          source: 'sbs'
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
+        })
+      }
+    }
+
+    // Fallback: general YouTube search with SBS Sport in query
+    const genUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}+SBS+Sport&type=video&maxResults=5&order=relevance&key=${key}`
+    const genRes = await fetch(genUrl)
+    const genData = await genRes.json()
+    const genItems = genData.items || []
+    const genMatch = genItems.find(item =>
+      /highlight/i.test(item.snippet?.title || '') &&
+      /sbs/i.test(item.snippet?.channelTitle || '')
+    ) || genItems.find(item =>
+      /highlight/i.test(item.snippet?.title || '')
+    ) || genItems[0]
+
+    if (genMatch?.id?.videoId) {
+      const videoId = genMatch.id.videoId
+      return new Response(JSON.stringify({
+        videoId,
+        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        title: genMatch.snippet?.title,
+        thumbnail: genMatch.snippet?.thumbnails?.medium?.url || genMatch.snippet?.thumbnails?.default?.url,
+        channel: genMatch.snippet?.channelTitle,
+        source: 'general'
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
+      })
+    }
+
+    // Final fallback: search URL
+    const fallbackQ = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
+    return new Response(JSON.stringify({
+      searchUrl: `https://www.youtube.com/results?search_query=${fallbackQ}`,
+      fallback: true
+    }), {
+      status: 200, headers: { 'Content-Type': 'application/json' }
+    })
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message, videoId: null }), {
+      status: 200, headers: { 'Content-Type': 'application/json' }
+    })
+  }
+}
+
+export const config = { path: '/api/highlights' }
   try {
     const url = new URL(req.url)
     const home = url.searchParams.get('home') || ''
