@@ -1,11 +1,12 @@
-// YouTube Data API v3 search for match highlights
-// API key stored in YOUTUBE_API_KEY env var (set in Netlify dashboard)
+// YouTube Data API v3 — search SBS Sport AU channel for match highlights
+// Falls back to general YouTube search, then a search URL
 
-// Resolve SBS Sport channel ID dynamically using the handle
 async function getSBSChannelId(key) {
-  const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=SBSSportau&key=${key}`)
-  const data = await res.json()
-  return data.items?.[0]?.id || null
+  try {
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=SBSSportau&key=${key}`)
+    const data = await res.json()
+    return data.items?.[0]?.id || null
+  } catch { return null }
 }
 
 export default async (req) => {
@@ -23,173 +24,58 @@ export default async (req) => {
     const key = (typeof Netlify !== 'undefined' && Netlify.env?.get('YOUTUBE_API_KEY'))
       || process.env.YOUTUBE_API_KEY
 
+    const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
+    const fallbackUrl = `https://www.youtube.com/results?search_query=${q}+SBS+Sport`
+
     if (!key) {
-      const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
-      return new Response(JSON.stringify({ searchUrl: `https://www.youtube.com/results?search_query=${q}`, fallback: true }), {
+      return new Response(JSON.stringify({ searchUrl: fallbackUrl, fallback: true }), {
         status: 200, headers: { 'Content-Type': 'application/json' }
       })
     }
 
-    const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
-
-    // Resolve the real SBS channel ID via handle
+    // 1. Search SBS Sport AU channel by handle
     const sbsChannelId = await getSBSChannelId(key)
-
     if (sbsChannelId) {
-      const sbsUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${sbsChannelId}&q=${q}&type=video&maxResults=5&order=date&key=${key}`
-      const sbsRes = await fetch(sbsUrl)
+      const sbsRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${sbsChannelId}&q=${q}&type=video&maxResults=5&order=date&key=${key}`)
       const sbsData = await sbsRes.json()
-      const sbsItems = sbsData.items || []
-      const sbsMatch = sbsItems.find(item =>
-        /highlight/i.test(item.snippet?.title || '') ||
-        /world.?cup/i.test(item.snippet?.title || '')
-      ) || sbsItems[0]
-
-      if (sbsMatch?.id?.videoId) {
-        const videoId = sbsMatch.id.videoId
+      const items = sbsData.items || []
+      const match = items.find(i => /highlight/i.test(i.snippet?.title || '') || /world.?cup/i.test(i.snippet?.title || '')) || items[0]
+      if (match?.id?.videoId) {
         return new Response(JSON.stringify({
-          videoId,
-          videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-          title: sbsMatch.snippet?.title,
-          thumbnail: sbsMatch.snippet?.thumbnails?.medium?.url || sbsMatch.snippet?.thumbnails?.default?.url,
-          channel: sbsMatch.snippet?.channelTitle,
+          videoId: match.id.videoId,
+          videoUrl: `https://www.youtube.com/watch?v=${match.id.videoId}`,
+          title: match.snippet?.title,
+          thumbnail: match.snippet?.thumbnails?.medium?.url || match.snippet?.thumbnails?.default?.url,
+          channel: match.snippet?.channelTitle,
           source: 'sbs'
-        }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
-        })
+        }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } })
       }
     }
 
-    // Fallback: general YouTube search with SBS Sport in query
-    const genUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}+SBS+Sport&type=video&maxResults=5&order=relevance&key=${key}`
-    const genRes = await fetch(genUrl)
+    // 2. General search prioritising SBS
+    const genRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}+SBS+Sport&type=video&maxResults=5&order=relevance&key=${key}`)
     const genData = await genRes.json()
     const genItems = genData.items || []
-    const genMatch = genItems.find(item =>
-      /highlight/i.test(item.snippet?.title || '') &&
-      /sbs/i.test(item.snippet?.channelTitle || '')
-    ) || genItems.find(item =>
-      /highlight/i.test(item.snippet?.title || '')
-    ) || genItems[0]
+    const genMatch = genItems.find(i =>
+      /highlight/i.test(i.snippet?.title || '') && /sbs/i.test(i.snippet?.channelTitle || '')
+    ) || genItems.find(i => /highlight/i.test(i.snippet?.title || '')) || genItems[0]
 
     if (genMatch?.id?.videoId) {
-      const videoId = genMatch.id.videoId
       return new Response(JSON.stringify({
-        videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        videoId: genMatch.id.videoId,
+        videoUrl: `https://www.youtube.com/watch?v=${genMatch.id.videoId}`,
         title: genMatch.snippet?.title,
         thumbnail: genMatch.snippet?.thumbnails?.medium?.url || genMatch.snippet?.thumbnails?.default?.url,
         channel: genMatch.snippet?.channelTitle,
         source: 'general'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
-      })
+      }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } })
     }
 
-    // Final fallback: search URL
-    const fallbackQ = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
-    return new Response(JSON.stringify({
-      searchUrl: `https://www.youtube.com/results?search_query=${fallbackQ}`,
-      fallback: true
-    }), {
+    // 3. Final fallback — search URL
+    return new Response(JSON.stringify({ searchUrl: fallbackUrl, fallback: true }), {
       status: 200, headers: { 'Content-Type': 'application/json' }
     })
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e.message, videoId: null }), {
-      status: 200, headers: { 'Content-Type': 'application/json' }
-    })
-  }
-}
 
-export const config = { path: '/api/highlights' }
-  try {
-    const url = new URL(req.url)
-    const home = url.searchParams.get('home') || ''
-    const away = url.searchParams.get('away') || ''
-
-    if (!home || !away) {
-      return new Response(JSON.stringify({ error: 'Missing home/away params' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' }
-      })
-    }
-
-    // Get API key from environment variable
-    const key = (typeof Netlify !== 'undefined' && Netlify.env?.get('YOUTUBE_API_KEY'))
-      || process.env.YOUTUBE_API_KEY
-
-    if (!key) {
-      const searchUrl = `https://www.youtube.com/results?search_query=${q}+SBS+Sport`
-      return new Response(JSON.stringify({ searchUrl, fallback: true, apiError: 'No API key configured' }), {
-        status: 200, headers: { 'Content-Type': 'application/json' }
-      })
-    }
-
-    const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
-
-    // Search SBS Sport AU channel first
-    const sbsUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${SBS_CHANNEL_ID}&q=${q}&type=video&maxResults=5&order=date&key=${key}`
-    const sbsRes = await fetch(sbsUrl)
-    const sbsData = await sbsRes.json()
-
-    if (sbsData.error) {
-      // API error — fall back to YouTube search URL
-      const searchUrl = `https://www.youtube.com/results?search_query=${q}+SBS+Sport`
-      return new Response(JSON.stringify({ searchUrl, fallback: true, apiError: sbsData.error.message }), {
-        status: 200, headers: { 'Content-Type': 'application/json' }
-      })
-    }
-
-    const sbsItems = sbsData.items || []
-    const sbsMatch = sbsItems.find(item =>
-      /highlight/i.test(item.snippet?.title || '') ||
-      /match/i.test(item.snippet?.title || '')
-    ) || sbsItems[0]
-
-    if (sbsMatch) {
-      const videoId = sbsMatch.id?.videoId
-      return new Response(JSON.stringify({
-        videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-        title: sbsMatch.snippet?.title,
-        thumbnail: sbsMatch.snippet?.thumbnails?.medium?.url || sbsMatch.snippet?.thumbnails?.default?.url,
-        channel: sbsMatch.snippet?.channelTitle,
-        source: 'sbs'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
-      })
-    }
-
-    // Fallback: general YouTube search
-    const genUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}+highlights&type=video&maxResults=5&order=relevance&key=${key}`
-    const genRes = await fetch(genUrl)
-    const genData = await genRes.json()
-    const genItems = genData.items || []
-    const genMatch = genItems.find(item =>
-      /highlight/i.test(item.snippet?.title || '') &&
-      !/reaction|prediction|watchalong/i.test(item.snippet?.title || '')
-    ) || genItems[0]
-
-    if (genMatch) {
-      const videoId = genMatch.id?.videoId
-      return new Response(JSON.stringify({
-        videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-        title: genMatch.snippet?.title,
-        thumbnail: genMatch.snippet?.thumbnails?.medium?.url || genMatch.snippet?.thumbnails?.default?.url,
-        channel: genMatch.snippet?.channelTitle,
-        source: 'general'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
-      })
-    }
-
-    return new Response(JSON.stringify({ videoId: null }), {
-      status: 200, headers: { 'Content-Type': 'application/json' }
-    })
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message, videoId: null }), {
       status: 200, headers: { 'Content-Type': 'application/json' }
