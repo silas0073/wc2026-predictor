@@ -1,12 +1,52 @@
-// YouTube Data API v3 — search SBS Sport AU channel for match highlights
-// Falls back to general YouTube search, then a search URL
+// Searches YouTube for WC2026 match highlights — no API key needed.
+// Scrapes the ytInitialData JSON embedded in YouTube search results pages,
+// same approach proven on the endtrump.xyz project.
+// Returns up to 5 candidate video IDs (frontend cycles through if one is blocked).
 
-async function getSBSChannelId(key) {
-  try {
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=SBSSportau&key=${key}`)
-    const data = await res.json()
-    return data.items?.[0]?.id || null
-  } catch { return null }
+const BLOCKED_CHANNELS = ['fifatv', 'fifa tv', 'fifa']
+
+async function searchYouTube(query) {
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
+  })
+  const html = await res.text()
+
+  // YouTube embeds all search data in var ytInitialData = {...};
+  const match = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/)
+  if (!match) return []
+
+  let data
+  try { data = JSON.parse(match[1]) } catch { return [] }
+
+  const contents =
+    data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
+      ?.sectionListRenderer?.contents ?? []
+
+  const videos = []
+  for (const section of contents) {
+    const items = section?.itemSectionRenderer?.contents ?? []
+    for (const item of items) {
+      const vr = item?.videoRenderer
+      if (!vr?.videoId) continue
+      const title = vr.title?.runs?.[0]?.text ?? ''
+      const channel = (vr.ownerText?.runs?.[0]?.text ?? '').toLowerCase()
+      const thumbnail = vr.thumbnail?.thumbnails?.slice(-1)[0]?.url ?? null
+
+      // Skip FIFA's own channel (often blocked for embedding)
+      if (BLOCKED_CHANNELS.some(b => channel.includes(b))) continue
+      // Prefer highlight/recap videos
+      if (!/highlight|recap|goal|result/i.test(title)) continue
+
+      videos.push({ videoId: vr.videoId, title, channel: vr.ownerText?.runs?.[0]?.text, thumbnail })
+      if (videos.length >= 5) break
+    }
+    if (videos.length >= 5) break
+  }
+  return videos
 }
 
 export default async (req) => {
@@ -21,58 +61,37 @@ export default async (req) => {
       })
     }
 
-    const key = (typeof Netlify !== 'undefined' && Netlify.env?.get('YOUTUBE_API_KEY'))
-      || process.env.YOUTUBE_API_KEY
+    // Try SBS-specific search first
+    const sbsQuery = `${home} ${away} highlights World Cup 2026 SBS Sport`
+    let videos = await searchYouTube(sbsQuery)
 
-    const q = encodeURIComponent(`${home} ${away} highlights World Cup 2026`)
-    const fallbackUrl = `https://www.youtube.com/results?search_query=${q}+SBS+Sport`
+    // Fall back to general search if nothing found
+    if (videos.length === 0) {
+      const genQuery = `${home} ${away} highlights World Cup 2026`
+      videos = await searchYouTube(genQuery)
+    }
 
-    if (!key) {
-      return new Response(JSON.stringify({ searchUrl: fallbackUrl, fallback: true }), {
-        status: 200, headers: { 'Content-Type': 'application/json' }
+    if (videos.length > 0) {
+      return new Response(JSON.stringify({
+        videoId: videos[0].videoId,
+        videoUrl: `https://www.youtube.com/watch?v=${videos[0].videoId}`,
+        title: videos[0].title,
+        thumbnail: videos[0].thumbnail,
+        channel: videos[0].channel,
+        candidates: videos.map(v => v.videoId),
+        source: 'scrape'
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
       })
     }
 
-    // 1. Search SBS Sport AU channel by handle
-    const sbsChannelId = await getSBSChannelId(key)
-    if (sbsChannelId) {
-      const sbsRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${sbsChannelId}&q=${q}&type=video&maxResults=5&order=date&key=${key}`)
-      const sbsData = await sbsRes.json()
-      const items = sbsData.items || []
-      const match = items.find(i => /highlight/i.test(i.snippet?.title || '') || /world.?cup/i.test(i.snippet?.title || '')) || items[0]
-      if (match?.id?.videoId) {
-        return new Response(JSON.stringify({
-          videoId: match.id.videoId,
-          videoUrl: `https://www.youtube.com/watch?v=${match.id.videoId}`,
-          title: match.snippet?.title,
-          thumbnail: match.snippet?.thumbnails?.medium?.url || match.snippet?.thumbnails?.default?.url,
-          channel: match.snippet?.channelTitle,
-          source: 'sbs'
-        }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } })
-      }
-    }
-
-    // 2. General search prioritising SBS
-    const genRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}+SBS+Sport&type=video&maxResults=5&order=relevance&key=${key}`)
-    const genData = await genRes.json()
-    const genItems = genData.items || []
-    const genMatch = genItems.find(i =>
-      /highlight/i.test(i.snippet?.title || '') && /sbs/i.test(i.snippet?.channelTitle || '')
-    ) || genItems.find(i => /highlight/i.test(i.snippet?.title || '')) || genItems[0]
-
-    if (genMatch?.id?.videoId) {
-      return new Response(JSON.stringify({
-        videoId: genMatch.id.videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${genMatch.id.videoId}`,
-        title: genMatch.snippet?.title,
-        thumbnail: genMatch.snippet?.thumbnails?.medium?.url || genMatch.snippet?.thumbnails?.default?.url,
-        channel: genMatch.snippet?.channelTitle,
-        source: 'general'
-      }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } })
-    }
-
-    // 3. Final fallback — search URL
-    return new Response(JSON.stringify({ searchUrl: fallbackUrl, fallback: true }), {
+    // Final fallback — search URL
+    const fallbackQ = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
+    return new Response(JSON.stringify({
+      searchUrl: `https://www.youtube.com/results?search_query=${fallbackQ}`,
+      fallback: true
+    }), {
       status: 200, headers: { 'Content-Type': 'application/json' }
     })
 
