@@ -5,10 +5,10 @@ import styles from './Results.module.css'
 
 // Cache highlight results at module level — survives component re-renders
 // caused by parent live-data polling, preventing the "load then hide" issue
-const highlightCache = {}
+const highlightCache = {} // v2 - SBS only
 
 function HighlightCard({ homeCode, awayCode }) {
-  const cacheKey = `${homeCode}-${awayCode}`
+  const cacheKey = `sbs2-${homeCode}-${awayCode}`
   const [state, setState] = useState(() => highlightCache[cacheKey] ? 'found' : 'idle')
   const [video, setVideo] = useState(() => highlightCache[cacheKey] || null)
 
