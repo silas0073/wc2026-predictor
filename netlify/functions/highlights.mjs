@@ -1,8 +1,7 @@
-// Searches YouTube for WC2026 match highlights — no API key needed.
+// Searches YouTube for SBS Sport AU WC2026 highlights — no API key needed.
 // Scrapes ytInitialData JSON from YouTube search results.
-// Prefers SBS Sport AU channel, falls back to any highlight video.
+// Only returns SBS videos — no fallback to other channels.
 
-const BLOCKED_CHANNELS = ['fifatv', 'fifa tv', 'fox sports', 'foxsports']
 const SBS_NAMES = ['sbs sport', 'sbs']
 
 async function searchYouTube(query) {
@@ -36,28 +35,17 @@ async function searchYouTube(query) {
       const channel = channelRaw.toLowerCase()
       const thumbnail = vr.thumbnail?.thumbnails?.slice(-1)[0]?.url ?? null
 
-      if (BLOCKED_CHANNELS.some(b => channel.includes(b))) continue
-      if (!/highlight|recap|goal|result/i.test(title)) continue
+      // Only SBS videos
+      const isSBS = SBS_NAMES.some(s => channel.includes(s))
+      if (!isSBS) continue
+      if (!/highlight|recap|world.?cup|match/i.test(title)) continue
 
-      videos.push({
-        videoId: vr.videoId,
-        title,
-        channel: channelRaw,
-        thumbnail,
-        isSBS: SBS_NAMES.some(s => channel.includes(s))
-      })
-      if (videos.length >= 8) break
+      videos.push({ videoId: vr.videoId, title, channel: channelRaw, thumbnail })
+      if (videos.length >= 3) break
     }
-    if (videos.length >= 8) break
+    if (videos.length >= 3) break
   }
   return videos
-}
-
-function pickBest(videos) {
-  // Prefer SBS first
-  const sbs = videos.find(v => v.isSBS)
-  if (sbs) return sbs
-  return videos[0] || null
 }
 
 export default async (req) => {
@@ -72,35 +60,32 @@ export default async (req) => {
       })
     }
 
-    // Search SBS-specific first
-    const sbsQuery = `${home} ${away} highlights World Cup 2026 SBS Sport`
-    let videos = await searchYouTube(sbsQuery)
-    let best = pickBest(videos)
+    // Try SBS-targeted searches
+    const queries = [
+      `${home} ${away} highlights World Cup 2026 SBS Sport`,
+      `${home} ${away} World Cup 2026 SBS`,
+      `${home} v ${away} SBS Sport 2026`,
+    ]
 
-    // If no SBS result, try general search
-    if (!best || !best.isSBS) {
-      const genQuery = `${home} ${away} World Cup 2026 highlights`
-      const genVideos = await searchYouTube(genQuery)
-      const genSBS = genVideos.find(v => v.isSBS)
-      if (genSBS) best = genSBS
-      else if (!best) best = genVideos[0] || null
+    for (const query of queries) {
+      const videos = await searchYouTube(query)
+      if (videos.length > 0) {
+        const v = videos[0]
+        return new Response(JSON.stringify({
+          videoId: v.videoId,
+          videoUrl: `https://www.youtube.com/watch?v=${v.videoId}`,
+          title: v.title,
+          thumbnail: v.thumbnail,
+          channel: v.channel,
+          source: 'sbs'
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
+        })
+      }
     }
 
-    if (best) {
-      return new Response(JSON.stringify({
-        videoId: best.videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${best.videoId}`,
-        title: best.title,
-        thumbnail: best.thumbnail,
-        channel: best.channel,
-        isSBS: best.isSBS,
-        source: 'scrape'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
-      })
-    }
-
+    // No SBS video found — return search URL instead of wrong channel
     const fallbackQ = encodeURIComponent(`${home} ${away} highlights World Cup 2026 SBS Sport`)
     return new Response(JSON.stringify({
       searchUrl: `https://www.youtube.com/results?search_query=${fallbackQ}`,
