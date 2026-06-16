@@ -28,9 +28,13 @@ function HighlightCard({ homeCode, awayCode }) {
         const res = await fetch(`/api/highlights?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`)
         const data = await res.json()
         if (mounted) {
-          if (data.videoId) {
-            // Full result with thumbnail
+          if (data.videoId && data.source === 'sbs') {
+            // Only cache genuine SBS results
             highlightCache[cacheKey] = data
+            setVideo(data)
+            setState('found')
+          } else if (data.videoId) {
+            // Non-SBS result — show but don't cache so it retries next time
             setVideo(data)
             setState('found')
           } else if (data.searchUrl || data.fallback) {
