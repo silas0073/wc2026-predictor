@@ -125,7 +125,14 @@ export const FIXTURES = [
   { id:'I6', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'SEN', away:'IRQ', venue:'BMO Field, Toronto',                   homeScore:null, awayScore:null },
   // GROUP J
   { id:'J1', group:'J', md:1, date:'2026-06-16', kickoff:'2026-06-17T01:00Z', home:'ARG', away:'ALG', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
-  { id:'J2', group:'J', md:1, date:'2026-06-17', kickoff:'2026-06-17T04:00Z', home:'AUT', away:'JOR', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
+  { id:'J2', group:'J', md:1, date:'2026-06-17', kickoff:'2026-06-17T04:00Z', home:'AUT', away:'JOR', venue:"Levi's Stadium, Santa Clara",          homeScore:3, awayScore:1,
+    goals: [
+      { team:'AUT', name:'Romano Schmid', minute:"21'" },
+      { team:'JOR', name:'Ali Olwan', minute:"50'" },
+      { team:'AUT', name:'Yazan Al-Arab', minute:"76'", ownGoal:true },
+      { team:'AUT', name:'Marko Arnautović', minute:"90+12'", penalty:true },
+    ]
+  },
   { id:'J3', group:'J', md:2, date:'2026-06-22', kickoff:'2026-06-23T01:00Z', home:'ARG', away:'AUT', venue:'MetLife Stadium, New York',            homeScore:null, awayScore:null },
   { id:'J4', group:'J', md:2, date:'2026-06-23', kickoff:'2026-06-23T04:00Z', home:'ALG', away:'JOR', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
   { id:'J5', group:'J', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:00Z', home:'JOR', away:'ARG', venue:'AT&T Stadium, Dallas',                 homeScore:null, awayScore:null },
