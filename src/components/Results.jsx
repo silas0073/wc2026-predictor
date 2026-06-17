@@ -48,7 +48,20 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
     </div>
   )
 
-  if (!candidates.length) return null
+  const sbsSearchUrl = `https://www.youtube.com/@SBSSportau/search?query=${encodeURIComponent(`${teamObj(fixture.home).name} ${teamObj(fixture.away).name} FIFA World Cup 2026 Highlights`)}`
+
+  if (!candidates.length) return (
+    <div className={styles.highlightRow}>
+      <a
+        className={styles.highlightBtn}
+        href={sbsSearchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        🔍 Search SBS on YouTube
+      </a>
+    </div>
+  )
 
   const videoId = candidates[idx]?.videoId
 
@@ -84,7 +97,7 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
             )}
             <a
               className={styles.nextBtn}
-              href={`https://www.youtube.com/@SBSSportau/search?query=${encodeURIComponent(`${teamObj(fixture.home).name} ${teamObj(fixture.away).name} FIFA World Cup 2026 Highlights`)}`}
+              href={sbsSearchUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
