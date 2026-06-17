@@ -117,12 +117,12 @@ export const FIXTURES = [
   { id:'H5', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T01:00Z', home:'CPV', away:'SAU', venue:'Camping World Stadium, Orlando',       homeScore:null, awayScore:null },
   { id:'H6', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T01:00Z', home:'URU', away:'ESP', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
   // GROUP I
-  { id:'I1', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T19:00Z', home:'FRA', away:'IRQ', venue:'MetLife Stadium, New York',            homeScore:null, awayScore:null },
-  { id:'I2', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T22:00Z', home:'NOR', away:'SEN', venue:'Camping World Stadium, Orlando',       homeScore:null, awayScore:null },
-  { id:'I3', group:'I', md:2, date:'2026-06-22', kickoff:'2026-06-22T19:00Z', home:'FRA', away:'NOR', venue:'Camping World Stadium, Orlando',       homeScore:null, awayScore:null },
-  { id:'I4', group:'I', md:2, date:'2026-06-22', kickoff:'2026-06-22T22:00Z', home:'SEN', away:'IRQ', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
-  { id:'I5', group:'I', md:3, date:'2026-06-27', kickoff:'2026-06-27T01:00Z', home:'IRQ', away:'NOR', venue:'Camping World Stadium, Orlando',       homeScore:null, awayScore:null },
-  { id:'I6', group:'I', md:3, date:'2026-06-27', kickoff:'2026-06-27T01:00Z', home:'SEN', away:'FRA', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
+  { id:'I1', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T19:00Z', home:'FRA', away:'SEN', venue:'MetLife Stadium, New York',            homeScore:3, awayScore:1 },
+  { id:'I2', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T22:00Z', home:'IRQ', away:'NOR', venue:'Gillette Stadium, Boston',              homeScore:null, awayScore:null },
+  { id:'I3', group:'I', md:2, date:'2026-06-22', kickoff:'2026-06-22T19:00Z', home:'FRA', away:'IRQ', venue:'Lincoln Financial Field, Philadelphia',homeScore:null, awayScore:null },
+  { id:'I4', group:'I', md:2, date:'2026-06-22', kickoff:'2026-06-22T22:00Z', home:'NOR', away:'SEN', venue:'MetLife Stadium, New York',            homeScore:null, awayScore:null },
+  { id:'I5', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'NOR', away:'FRA', venue:'Gillette Stadium, Boston',             homeScore:null, awayScore:null },
+  { id:'I6', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'SEN', away:'IRQ', venue:'BMO Field, Toronto',                   homeScore:null, awayScore:null },
   // GROUP J
   { id:'J1', group:'J', md:1, date:'2026-06-17', kickoff:'2026-06-17T01:00Z', home:'ARG', away:'ALG', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
   { id:'J2', group:'J', md:1, date:'2026-06-17', kickoff:'2026-06-17T04:00Z', home:'AUT', away:'JOR', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
