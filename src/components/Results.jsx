@@ -3,15 +3,13 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-// Simple YouTube search link on SBS Sport AU channel - no API calls needed
+// Direct link to SBS Sport AU channel videos
 function HighlightCard({ homeCode, awayCode }) {
-  const home = TEAMS[homeCode]?.name || homeCode
-  const away = TEAMS[awayCode]?.name || awayCode
-  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(home + ' ' + away + ' world cup')} channel:UCn6UMS98Ox-B3jkSWlweJ2w`
+  const sbsChannelUrl = 'https://www.youtube.com/@SBSSportau/videos'
   
   return (
     <a
-      href={searchUrl}
+      href={sbsChannelUrl}
       target="_blank"
       rel="noopener noreferrer"
       className={styles.highlightFallback}
