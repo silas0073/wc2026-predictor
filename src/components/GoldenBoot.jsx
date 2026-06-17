@@ -78,7 +78,7 @@ export default function GoldenBoot() {
   }
 
   const hasLiveData = Object.keys(scorerMap).length > 0
-  const topScorers = Object.values(scorerMap).sort((a,b) => b.goals - a.goals)
+  const topScorers = Object.values(scorerMap).sort((a,b) => b.goals - a.goals).slice(0, 10)
 
   // Group ones to watch by group
   const byGroup = ONES_TO_WATCH.reduce((acc, p) => {
