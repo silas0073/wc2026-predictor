@@ -3,96 +3,20 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-// Cache highlight results at module level — survives component re-renders
-// caused by parent live-data polling, preventing the "load then hide" issue
-const highlightCache = {} // v2 - SBS only
-
+// Simple SBS search link - no API calls needed
 function HighlightCard({ homeCode, awayCode }) {
-  const cacheKey = `sbs2-${homeCode}-${awayCode}`
-  const [state, setState] = useState(() => highlightCache[cacheKey] ? 'found' : 'idle')
-  const [video, setVideo] = useState(() => highlightCache[cacheKey] || null)
-
   const home = TEAMS[homeCode]?.name || homeCode
   const away = TEAMS[awayCode]?.name || awayCode
-
-  useEffect(() => {
-    if (highlightCache[cacheKey]) {
-      setVideo(highlightCache[cacheKey])
-      setState('found')
-      return
-    }
-    let mounted = true
-    const fetchHighlight = async () => {
-      setState('loading')
-      try {
-        const res = await fetch(`/api/highlights?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`)
-        const data = await res.json()
-        if (mounted) {
-          if (data.videoId && data.source === 'sbs') {
-            // Only cache genuine SBS results
-            highlightCache[cacheKey] = data
-            setVideo(data)
-            setState('found')
-          } else if (data.videoId) {
-            // Non-SBS result — show but don't cache so it retries next time
-            setVideo(data)
-            setState('found')
-          } else if (data.searchUrl || data.fallback) {
-            // API error fallback — show a plain search link
-            const fallbackData = {
-              videoUrl: data.searchUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(home + ' ' + away + ' highlights World Cup 2026 SBS Sport')}`,
-              title: `${home} vs ${away} — highlights`,
-              thumbnail: null,
-              channel: 'SBS Sport (search)',
-              fallback: true,
-            }
-            highlightCache[cacheKey] = fallbackData
-            setVideo(fallbackData)
-            setState('found')
-          } else {
-            setState('notfound')
-          }
-        }
-      } catch {
-        if (mounted) setState('notfound')
-      }
-    }
-    fetchHighlight()
-    return () => { mounted = false }
-  }, [cacheKey])
-
-  if (state === 'loading') return (
-    <div className={styles.highlightLoading}>Loading highlights…</div>
-  )
-
-  if (state === 'notfound' || state === 'idle') return null
-
-  // Fallback: no thumbnail, just a link
-  if (video.fallback || !video.thumbnail) return (
-    <a href={video.videoUrl} target="_blank" rel="noopener noreferrer" className={styles.highlightFallback}>
-      ▶ Watch highlights on YouTube
-    </a>
-  )
-
+  const searchUrl = `https://www.sbs.com.au/search?q=${encodeURIComponent(home + ' vs ' + away + ' world cup 2026')}`
+  
   return (
     <a
-      href={video.videoUrl}
+      href={searchUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className={styles.highlightCard}
+      className={styles.highlightFallback}
     >
-      <div className={styles.thumbWrap}>
-        {video.thumbnail ? (
-          <img src={video.thumbnail} alt="Highlights" className={styles.thumb} />
-        ) : (
-          <div className={styles.thumbPlaceholder} />
-        )}
-        <div className={styles.playOverlay}>▶</div>
-      </div>
-      <div className={styles.highlightMeta}>
-        <span className={styles.highlightTitle}>{video.title}</span>
-        <span className={styles.highlightChannel}>{video.channel}</span>
-      </div>
+      ▶ Watch on SBS Sport
     </a>
   )
 }
