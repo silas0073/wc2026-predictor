@@ -46,19 +46,22 @@
 
 .events {
   margin-top:8px; padding-top:8px; border-top:1px solid rgba(107,128,153,.08);
-  display:flex; flex-direction:column; gap:5px;
+  display:flex; flex-direction:column; gap:4px;
 }
-.eventItem {
-  display:flex; align-items:center; gap:6px;
+.eventRow {
+  display:grid; grid-template-columns:1fr 1fr;
   font-size:.7rem; color:var(--muted);
 }
-.eventFlag { font-size:.85rem; flex-shrink:0; }
-.eventIcon { flex-shrink:0; }
-.eventText { flex:1; min-width:0; word-break:break-word; }
-.eventTeamCode {
-  flex-shrink:0; font-family:var(--mono); font-size:.6rem; color:var(--muted2);
-  background:var(--bg3); padding:1px 6px; border-radius:4px; text-transform:uppercase;
+.eventHome {
+  display:flex; align-items:center; gap:5px; justify-content:flex-start;
 }
+.eventAway {
+  display:flex; align-items:center; gap:5px; justify-content:flex-end;
+}
+.eventFlag { font-size:.85rem; flex-shrink:0; }
+.eventIcon { flex-shrink:0; font-size:.75rem; }
+.eventMinute { flex-shrink:0; color:var(--muted2); font-family:var(--mono); font-size:.65rem; }
+.eventText { min-width:0; word-break:break-word; }
 
 @media(max-width:420px) {
   .name { font-size:.78rem; }
@@ -150,3 +153,4 @@
 .closeBtn:hover, .nextBtn:hover {
   background:var(--bg4); border-color:rgba(255,0,0,.4);
 }
+
