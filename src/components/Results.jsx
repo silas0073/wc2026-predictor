@@ -3,18 +3,21 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-// Direct link to SBS Sport AU channel videos
+// YouTube search for match highlights on SBS Sport AU channel
 function HighlightCard({ homeCode, awayCode }) {
-  const sbsChannelUrl = 'https://www.youtube.com/@SBSSportau/videos'
+  const home = TEAMS[homeCode]?.name || homeCode
+  const away = TEAMS[awayCode]?.name || awayCode
+  const matchString = `${home} v ${away}: FIFA World Cup 2026: Highlights`
+  const searchUrl = `https://www.youtube.com/@SBSSportau/search?query=${encodeURIComponent(matchString)}`
   
   return (
     <a
-      href={sbsChannelUrl}
+      href={searchUrl}
       target="_blank"
       rel="noopener noreferrer"
       className={styles.highlightFallback}
     >
-      ▶ Watch highlights
+      {matchString}
     </a>
   )
 }
