@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TEAMS, FIXTURES } from '../data.js'
 import styles from './GoldenBoot.module.css'
 
@@ -25,79 +25,6 @@ export const ONES_TO_WATCH = [
   { name: 'Achraf Hakimi',      team: 'MAR', age: 27, goals2022: null, info: 'PSG, Morocco captain' },
 ]
   .filter(p => TEAMS[p.team])
-
-// Best Goals embed — searches YouTube by view count
-const bestGoalsCache = { data: null }
-
-function BestGoals() {
-  const [candidates, setCandidates] = useState(bestGoalsCache.data || [])
-  const [loading, setLoading] = useState(!bestGoalsCache.data)
-  const [idx, setIdx] = useState(0)
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    if (bestGoalsCache.data) return
-    fetch('/api/best-goals', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(d => {
-        const c = d.candidates || []
-        if (c.length > 0) bestGoalsCache.data = c  // only cache if we got results
-        setCandidates(c)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
-
-  const tryNext = () => {
-    if (idx + 1 < candidates.length) setIdx(i => i + 1)
-    else setOpen(false)
-  }
-
-  const videoId = candidates[idx]?.videoId
-
-  return (
-    <div className={styles.bestGoalsSection}>
-      <h3 className={styles.bestGoalsTitle}>⚡ Best Goals So Far</h3>
-      {loading ? (
-        <div className={styles.bestGoalsLoading}>Loading…</div>
-      ) : candidates.length === 0 ? (
-        <a
-          className={styles.highlightBtn}
-          href="https://www.youtube.com/@SBSSportau/search?query=best+goals+FIFA+World+Cup+2026"
-          target="_blank" rel="noopener noreferrer"
-        >
-          🔍 Search on YouTube
-        </a>
-      ) : !open ? (
-        <button className={styles.highlightBtn} onClick={() => setOpen(true)}>
-          ▶ Watch Best Goals
-        </button>
-      ) : (
-        <>
-          {candidates[idx]?.title && (
-            <div className={styles.bestGoalsVideoTitle}>{candidates[idx].title}</div>
-          )}
-          <div className={styles.embedWrap}>
-            <iframe
-              key={videoId}
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-              title="Best goals"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className={styles.embed}
-            />
-          </div>
-          <div className={styles.highlightActions}>
-            <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕ Close</button>
-            {idx + 1 < candidates.length && (
-              <button className={styles.nextBtn} onClick={tryNext}>↻ Try another</button>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
 
 export default function GoldenBoot() {
   const [tab, setTab] = useState('top')
@@ -207,8 +134,6 @@ export default function GoldenBoot() {
               })}
             </div>
           )}
-
-          <BestGoals />
         </>
       )}
 
