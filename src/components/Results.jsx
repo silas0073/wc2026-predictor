@@ -3,12 +3,12 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-// YouTube search for match highlights on SBS Sport AU channel
+// YouTube search: channel + match string - relevant SBS video floats to top
 function HighlightCard({ homeCode, awayCode }) {
   const home = TEAMS[homeCode]?.name || homeCode
   const away = TEAMS[awayCode]?.name || awayCode
-  const matchString = `${home} v ${away}: FIFA World Cup 2026: Highlights`
-  const searchUrl = `https://www.youtube.com/@SBSSportau/search?query=${encodeURIComponent(matchString)}`
+  const query = `SBS Sport ${home} v ${away} FIFA World Cup 2026 Highlights`
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
   
   return (
     <a
@@ -17,7 +17,7 @@ function HighlightCard({ homeCode, awayCode }) {
       rel="noopener noreferrer"
       className={styles.highlightFallback}
     >
-      {matchString}
+      ▶ {home} v {away}: FIFA World Cup 2026: Highlights
     </a>
   )
 }
