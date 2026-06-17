@@ -28,6 +28,10 @@ async function searchYouTube(query) {
       const title = vr.title?.runs?.[0]?.text ?? ''
       const channel = vr.ownerText?.runs?.[0]?.text ?? ''
       const thumbnail = vr.thumbnail?.thumbnails?.slice(-1)[0]?.url ?? null
+
+      // Must mention 2026, must not be a song/music video
+      if (!title.includes('2026')) continue
+      if (/waka|song|official music|vevo|lyrics/i.test(title)) continue
       videos.push({ videoId: vr.videoId, title, channel, thumbnail })
       if (videos.length >= 5) break
     }
@@ -39,8 +43,9 @@ async function searchYouTube(query) {
 export default async (req) => {
   try {
     const queries = [
-      'best goals FIFA World Cup 2026 so far',
-      'top goals World Cup 2026',
+      'best goals FIFA World Cup 2026',
+      'top goals World Cup 2026 highlights',
+      'greatest goals 2026 World Cup',
     ]
 
     for (const query of queries) {
