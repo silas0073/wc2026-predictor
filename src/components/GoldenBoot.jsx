@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { TEAMS, FIXTURES } from '../data.js'
 import styles from './GoldenBoot.module.css'
-
-// Live scorer data is fetched from /api/scorers (ESPN proxy)
 
 // Pre-tournament star players to watch
 export const ONES_TO_WATCH = [
@@ -20,14 +18,86 @@ export const ONES_TO_WATCH = [
   { name: 'Ruben Neves',        team: 'POR', age: 28, goals2022: null, info: 'Al-Hilal, Portugal engine' },
   { name: 'Gavi',               team: 'ESP', age: 24, goals2022: null, info: 'Barcelona, Spain\'s heartbeat' },
   { name: 'Florian Wirtz',      team: 'GER', age: 21, goals2022: null, info: 'Leverkusen, Germany\'s star' },
-  { name: 'Rasmus Hojlund',     team: 'DEN', age: 22, goals2022: null, info: 'Man United striker — wait he\'s not in WC' },
   { name: 'Donyell Malen',      team: 'NED', age: 26, goals2022: null, info: 'Netherlands attacker' },
   { name: 'Cody Gakpo',         team: 'NED', age: 25, goals2022: 3,  info: 'Liverpool, Netherlands danger man' },
   { name: 'Memphis Depay',      team: 'NED', age: 30, goals2022: null, info: 'Netherlands veteran' },
   { name: 'Richarlison',        team: 'BRA', age: 27, goals2022: 3,  info: 'Tottenham, Brazil striker' },
   { name: 'Achraf Hakimi',      team: 'MAR', age: 27, goals2022: null, info: 'PSG, Morocco captain' },
 ]
-  .filter(p => TEAMS[p.team]) // only teams in tournament
+  .filter(p => TEAMS[p.team])
+
+// Best Goals embed — searches YouTube by view count
+const bestGoalsCache = { data: null }
+
+function BestGoals() {
+  const [candidates, setCandidates] = useState(bestGoalsCache.data || [])
+  const [loading, setLoading] = useState(!bestGoalsCache.data)
+  const [idx, setIdx] = useState(0)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (bestGoalsCache.data) return
+    fetch('/api/best-goals', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        const c = d.candidates || []
+        bestGoalsCache.data = c
+        setCandidates(c)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const tryNext = () => {
+    if (idx + 1 < candidates.length) setIdx(i => i + 1)
+    else setOpen(false)
+  }
+
+  const videoId = candidates[idx]?.videoId
+
+  return (
+    <div className={styles.bestGoalsSection}>
+      <h3 className={styles.bestGoalsTitle}>⚡ Best Goals So Far</h3>
+      {loading ? (
+        <div className={styles.bestGoalsLoading}>Loading…</div>
+      ) : candidates.length === 0 ? (
+        <a
+          className={styles.highlightBtn}
+          href="https://www.youtube.com/@SBSSportau/search?query=best+goals+FIFA+World+Cup+2026"
+          target="_blank" rel="noopener noreferrer"
+        >
+          🔍 Search on YouTube
+        </a>
+      ) : !open ? (
+        <button className={styles.highlightBtn} onClick={() => setOpen(true)}>
+          ▶ Watch Best Goals
+        </button>
+      ) : (
+        <>
+          {candidates[idx]?.title && (
+            <div className={styles.bestGoalsVideoTitle}>{candidates[idx].title}</div>
+          )}
+          <div className={styles.embedWrap}>
+            <iframe
+              key={videoId}
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+              title="Best goals"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className={styles.embed}
+            />
+          </div>
+          <div className={styles.highlightActions}>
+            <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕ Close</button>
+            {idx + 1 < candidates.length && (
+              <button className={styles.nextBtn} onClick={tryNext}>↻ Try another</button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function GoldenBoot() {
   const [tab, setTab] = useState('top')
@@ -51,10 +121,8 @@ export default function GoldenBoot() {
     }
     fetchResults()
     const interval = setInterval(fetchResults, 60000)
-
     const onVisible = () => { if (document.visibilityState === 'visible') fetchResults() }
     document.addEventListener('visibilitychange', onVisible)
-
     return () => {
       mounted = false
       clearInterval(interval)
@@ -62,8 +130,6 @@ export default function GoldenBoot() {
     }
   }, [])
 
-  // Aggregate goals across every match played so far in the tournament
-  // (own goals don't count toward the Golden Boot)
   const scorerMap = {}
   if (results) {
     Object.values(results).forEach(match => {
@@ -80,7 +146,6 @@ export default function GoldenBoot() {
   const hasLiveData = Object.keys(scorerMap).length > 0
   const topScorers = Object.values(scorerMap).sort((a,b) => b.goals - a.goals).slice(0, 10)
 
-  // Group ones to watch by group
   const byGroup = ONES_TO_WATCH.reduce((acc, p) => {
     const g = TEAMS[p.team]?.group
     if (!g) return acc
@@ -142,6 +207,8 @@ export default function GoldenBoot() {
               })}
             </div>
           )}
+
+          <BestGoals />
         </>
       )}
 
