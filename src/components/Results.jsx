@@ -82,6 +82,14 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
             {candidates.length > 1 && idx + 1 < candidates.length && (
               <button className={styles.nextBtn} onClick={tryNext}>↻ Try another</button>
             )}
+            <a
+              className={styles.nextBtn}
+              href={`https://www.youtube.com/@SBSSportau/search?query=${encodeURIComponent(`${teamObj(fixture.home).name} ${teamObj(fixture.away).name} FIFA World Cup 2026 Highlights`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔍 Search SBS on YouTube
+            </a>
           </div>
         </>
       )}
