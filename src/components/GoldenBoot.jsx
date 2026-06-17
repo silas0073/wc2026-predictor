@@ -41,7 +41,7 @@ function BestGoals() {
       .then(r => r.json())
       .then(d => {
         const c = d.candidates || []
-        bestGoalsCache.data = c
+        if (c.length > 0) bestGoalsCache.data = c  // only cache if we got results
         setCandidates(c)
         setLoading(false)
       })
