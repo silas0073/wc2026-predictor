@@ -3,11 +3,11 @@ import { FIXTURES, GROUP_LABELS, TEAMS } from '../data.js'
 import { teamObj, formatDate } from '../utils.js'
 import styles from './Results.module.css'
 
-// Simple SBS search link - no API calls needed
+// Simple YouTube search link on SBS Sport AU channel - no API calls needed
 function HighlightCard({ homeCode, awayCode }) {
   const home = TEAMS[homeCode]?.name || homeCode
   const away = TEAMS[awayCode]?.name || awayCode
-  const searchUrl = `https://www.sbs.com.au/search?q=${encodeURIComponent(home + ' vs ' + away + ' world cup 2026')}`
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(home + ' ' + away + ' world cup')} channel:UCn6UMS98Ox-B3jkSWlweJ2w`
   
   return (
     <a
@@ -16,7 +16,7 @@ function HighlightCard({ homeCode, awayCode }) {
       rel="noopener noreferrer"
       className={styles.highlightFallback}
     >
-      ▶ Watch on SBS Sport
+      ▶ Watch highlights
     </a>
   )
 }
