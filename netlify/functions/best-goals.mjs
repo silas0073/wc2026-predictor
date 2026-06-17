@@ -29,10 +29,13 @@ async function searchYouTube(query) {
       const channel = vr.ownerText?.runs?.[0]?.text ?? ''
       const thumbnail = vr.thumbnail?.thumbnails?.slice(-1)[0]?.url ?? null
 
-      // Exclude music videos and songs
+      // Must mention 2026
+      if (!title.includes('2026')) continue
+      // Exclude FIFA official channel (always blocks embeds) and music
+      if (/\bfifa\b/i.test(channel)) continue
       if (/waka|song|official music|vevo|lyrics|anthem/i.test(title)) continue
       // Must be football/goal related
-      if (!/goal|goals|highlight|world.?cup|fifa/i.test(title)) continue
+      if (!/goal|goals|highlight|world.?cup/i.test(title)) continue
       videos.push({ videoId: vr.videoId, title, channel, thumbnail })
       if (videos.length >= 5) break
     }
