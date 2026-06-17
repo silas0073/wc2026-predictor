@@ -207,19 +207,32 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
                     return match ? parseInt(match[1], 10) : 999
                   }
                   all.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+                  const homeEvents = all.filter(e => e.team === f.home)
+                  const awayEvents = all.filter(e => e.team === f.away)
+                  const rows = Math.max(homeEvents.length, awayEvents.length)
                   return (
                     <div className={styles.events}>
-                      {all.map((e, i) => {
-                        const teamFlag = e.team === f.home ? home.flag : away.flag
-                        const teamCode = e.team === f.home ? home.code : away.code
+                      {Array.from({ length: rows }).map((_, i) => {
+                        const h = homeEvents[i]
+                        const a = awayEvents[i]
                         return (
-                          <div key={i} className={styles.eventItem}>
-                            <span className={styles.eventFlag}>{teamFlag}</span>
-                            <span className={styles.eventIcon}>{e.kind === 'goal' ? '⚽' : '🟥'}</span>
-                            <span className={styles.eventText}>
-                              {e.name}{e.ownGoal ? ' (OG)' : ''}{e.minute ? ` ${e.minute}` : ''}
-                            </span>
-                            <span className={styles.eventTeamCode}>{teamCode}</span>
+                          <div key={i} className={styles.eventRow}>
+                            <div className={styles.eventHome}>
+                              {h && <>
+                                <span className={styles.eventIcon}>{h.kind === 'goal' ? '⚽' : '🟥'}</span>
+                                <span className={styles.eventText}>{h.name}{h.ownGoal ? ' (OG)' : ''}</span>
+                                <span className={styles.eventMinute}>{h.minute}</span>
+                                <span className={styles.eventFlag}>{home.flag}</span>
+                              </>}
+                            </div>
+                            <div className={styles.eventAway}>
+                              {a && <>
+                                <span className={styles.eventFlag}>{away.flag}</span>
+                                <span className={styles.eventMinute}>{a.minute}</span>
+                                <span className={styles.eventText}>{a.name}{a.ownGoal ? ' (OG)' : ''}</span>
+                                <span className={styles.eventIcon}>{a.kind === 'goal' ? '⚽' : '🟥'}</span>
+                              </>}
+                            </div>
                           </div>
                         )
                       })}
