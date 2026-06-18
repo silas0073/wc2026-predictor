@@ -4,11 +4,13 @@ import Schedule from './components/Schedule.jsx'
 import Results from './components/Results.jsx'
 import TableView from './components/TableView.jsx'
 import Bracket from './components/Bracket.jsx'
+import Knockout from './components/Knockout.jsx'
 import AIPredictions from './components/AIPredictions.jsx'
 import GoldenBoot from './components/GoldenBoot.jsx'
 import Teams from './components/Teams.jsx'
 import LiveScores from './components/LiveScores.jsx'
 import { useLiveResults } from './useLiveResults.js'
+import { useLiveKnockout } from './useLiveKnockout.js'
 import Banner from './components/Banner.jsx'
 import { FIXTURES } from './data.js'
 import styles from './App.module.css'
@@ -24,15 +26,23 @@ const TABS = [
   { id: 'schedule',  label: 'Schedule',  icon: '📅' },
   { id: 'table',     label: 'Standings', icon: '📊' },
   { id: 'predictor', label: 'Predictor', icon: '⚽' },
-  { id: 'bracket',   label: 'Bracket',   icon: '🏆' },
+  { id: 'knockout',  label: 'Knockout',  icon: '🏆' },
   { id: 'ai',        label: 'AI Picks',  icon: '🤖' },
   { id: 'golden',    label: 'Top Scorers', icon: '🥾' },
   { id: 'teams',     label: 'Teams', icon: '🌍' },
 ]
 
+// Sub-tabs within the Predictor tab
+const PREDICTOR_SUBTABS = [
+  { id: 'groups',  label: 'Groups' },
+  { id: 'bracket', label: 'Bracket Picks' },
+]
+
 export default function App() {
   const [tab, setTab] = useState('results')
+  const [predictorSubtab, setPredictorSubtab] = useState('groups')
   const { fixtures: liveFixtures } = useLiveResults()
+  const { fixtures: knockoutFixtures } = useLiveKnockout(liveFixtures)
 
   const [predictions, setPredictions] = useState(() => {
     try {
@@ -145,11 +155,31 @@ export default function App() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          {tab === 'predictor' && <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} fixtures={liveFixtures} bracketPicks={bracketPicks} />}
+          {tab === 'predictor' && (
+            <>
+              <div className={styles.predictorSubnav}>
+                {PREDICTOR_SUBTABS.map(st => (
+                  <button
+                    key={st.id}
+                    className={`${styles.subNavBtn} ${predictorSubtab === st.id ? styles.subNavActive : ''}`}
+                    onClick={() => setPredictorSubtab(st.id)}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+              {predictorSubtab === 'groups' && (
+                <GroupStage predictions={predictions} onPredict={predict} onBulkPredict={bulkPredict} onLoad={loadPredictions} onReplace={replacePredictions} fixtures={liveFixtures} bracketPicks={bracketPicks} />
+              )}
+              {predictorSubtab === 'bracket' && (
+                <Bracket predictions={predictions} fixtures={liveFixtures} picks={bracketPicks} onPicksChange={setBracketPicks} />
+              )}
+            </>
+          )}
           {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'table'     && <TableView predictions={predictions} fixtures={liveFixtures} />}
-          {tab === 'bracket'   && <Bracket predictions={predictions} fixtures={liveFixtures} picks={bracketPicks} onPicksChange={setBracketPicks} />}
+          {tab === 'knockout'  && <Knockout fixtures={knockoutFixtures} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
           {tab === 'golden'    && <GoldenBoot />}
           {tab === 'teams'     && <Teams />}
