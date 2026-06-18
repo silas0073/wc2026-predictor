@@ -1,0 +1,107 @@
+.wrap { padding:4px 0 24px; }
+.pageHeader { margin-bottom:16px; }
+.pageHeader h2 { font-size:1.4rem; font-weight:700; letter-spacing:-.02em; margin-bottom:4px; }
+.pageHeader p  { font-size:.82rem; color:var(--muted); }
+
+.notStarted {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  padding:20px; text-align:center; margin-bottom:20px;
+}
+.notStartedIcon { font-size:1.8rem; margin-bottom:8px; }
+.notStartedTitle { font-size:.95rem; font-weight:700; color:var(--gold); margin-bottom:6px; }
+.notStartedSub { font-size:.78rem; color:var(--muted); line-height:1.5; max-width:480px; margin:0 auto; }
+
+/* ---- Tree layout ---- */
+.treeScroll {
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:8px; margin:0 -12px; padding-left:12px; padding-right:12px;
+}
+.tree {
+  display:flex; align-items:stretch; gap:0; min-width:max-content;
+}
+
+.column {
+  display:flex; flex-direction:column;
+  width:200px; flex-shrink:0;
+}
+.columnHeader {
+  font-size:.7rem; font-weight:700; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.08em;
+  text-align:center; padding-bottom:10px;
+}
+
+.matchList {
+  display:flex; flex-direction:column;
+  flex:1;
+}
+
+/* Each round's match block is vertically centered relative to its two
+   feeder matches from the previous round, using flex spacers that double
+   in height each round — standard bracket math (16 -> 8 -> 4 -> 2 -> 1). */
+.matchList > .match { margin: 10px 8px; }
+
+.matchList_R32 > .match { flex:0 0 auto; }
+.matchList_R16 { justify-content:space-around; }
+.matchList_R16 > .match { margin: 0 8px; position:relative; }
+.matchList_QF { justify-content:space-around; }
+.matchList_QF > .match { margin: 0 8px; position:relative; }
+.matchList_SF { justify-content:space-around; }
+.matchList_SF > .match { margin: 0 8px; position:relative; }
+.matchList_FINAL { justify-content:center; }
+.matchList_FINAL > .match { margin: 0 8px; }
+
+/* Connector lines: a horizontal stub on the left edge of every match card
+   from R16 onward, drawn with pseudo-elements. */
+.matchList_R16 > .match::before,
+.matchList_QF > .match::before,
+.matchList_SF > .match::before {
+  content:''; position:absolute; left:-8px; top:50%; width:8px; height:1px;
+  background:var(--border);
+}
+
+.thirdPlaceSection { margin-top:24px; max-width:220px; }
+
+/* ---- Match card ---- */
+.match {
+  background:var(--bg2); border:1px solid var(--border); border-radius:10px;
+  padding:8px 10px; transition:border-color .2s;
+}
+.match.played { border-color:rgba(245,197,24,.18); }
+.match.live { border-color:rgba(0,212,106,.5); background:rgba(0,212,106,.04); }
+
+.matchMeta {
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  font-size:.58rem; color:var(--muted2); font-family:var(--mono);
+  letter-spacing:.02em; margin-bottom:5px; white-space:nowrap;
+}
+.liveTag { color:var(--green); font-weight:700; }
+
+.teamRow {
+  display:flex; align-items:center; gap:6px; padding:3px 0;
+  font-size:.78rem;
+}
+.teamRow.tbd { color:var(--muted2); font-style:italic; }
+.crest { font-size:.92rem; flex-shrink:0; width:16px; text-align:center; }
+.teamName {
+  flex:1; min-width:0; font-weight:600;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.teamRow.winner .teamName { color:var(--gold); }
+.score {
+  font-family:var(--mono); font-weight:700; font-size:.8rem; flex-shrink:0;
+}
+.pk { font-size:.55rem; color:var(--muted); margin-left:1px; }
+.scoreLive {
+  font-family:var(--mono); font-weight:700; font-size:.8rem; color:var(--green); flex-shrink:0;
+}
+
+.venue {
+  font-size:.58rem; color:var(--muted2); margin-top:5px;
+  padding-top:5px; border-top:1px solid var(--border);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+@media(max-width:600px){
+  .column { width:170px; }
+  .teamName { font-size:.74rem; }
+}
