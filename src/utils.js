@@ -1,4 +1,4 @@
-import { TEAMS, GROUPS, FIXTURES } from './data.js'
+import { TEAMS, GROUPS, FIXTURES, KNOCKOUT_FIXTURES } from './data.js'
 
 export function formatDate(d) {
   return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {
@@ -68,4 +68,83 @@ export function autoFillGroup(groupLetter, existing = {}) {
     if (!result[f.id]) result[f.id] = simulateScore(f.home, f.away)
   })
   return result
+}
+
+// Resolves knockout slot descriptors ({g,p} / {t3} / {w} / {l}) into real
+// team codes using REAL group results only (no predictions). A group's
+// standings are only considered "final" once all 6 of its fixtures have a
+// real score — otherwise its winner/runner-up/3rd slots stay TBD, since an
+// incomplete table can't be trusted to rank teams correctly yet.
+// `fixtures` should be the live-merged FIXTURES (group stage).
+// `knockoutFixtures` should be the live-merged KNOCKOUT_FIXTURES (so winners
+// of earlier rounds are already known when resolving later rounds).
+export function resolveKnockoutFixtures(fixtures = FIXTURES, knockoutFixtures = KNOCKOUT_FIXTURES) {
+  // Only treat a group as finished once every fixture in it has a real score
+  const groupDone = {}
+  GROUP_LABELS_LOCAL().forEach(g => {
+    const gFixtures = fixtures.filter(f => f.group === g)
+    groupDone[g] = gFixtures.length > 0 && gFixtures.every(f => f.homeScore !== null && f.awayScore !== null)
+  })
+
+  const standingsCache = {}
+  const getStandings = (g) => {
+    if (!standingsCache[g]) standingsCache[g] = groupStandings(g, {}, fixtures)
+    return standingsCache[g]
+  }
+
+  // Best-8 third place teams — only computable once ALL 12 groups are done
+  const allGroupsDone = GROUP_LABELS_LOCAL().every(g => groupDone[g])
+  let best8 = null
+  if (allGroupsDone) {
+    const thirds = GROUP_LABELS_LOCAL().map(g => {
+      const rows = getStandings(g)
+      const r = rows[2]
+      return r ? { group: g, code: r.code, pts: r.Pts, gd: r.GD, gf: r.GF } : null
+    }).filter(Boolean)
+    best8 = thirds.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf).slice(0,8)
+  }
+
+  const resolveSlot = (slot, byId) => {
+    if (typeof slot === 'string') return slot // already resolved
+    if (!slot) return null
+    if (slot.g) {
+      if (!groupDone[slot.g]) return null
+      const rows = getStandings(slot.g)
+      return rows[slot.p - 1]?.code || null
+    }
+    if (slot.t3) {
+      if (!best8) return null
+      const match = best8.find(b => slot.t3.includes(b.group))
+      return match?.code || null
+    }
+    if (slot.w != null) {
+      const m = byId[`M${slot.w}`]
+      if (!m || m.homeScore === null || m.awayScore === null) return null
+      if (m.homeScore === m.awayScore) return null // shouldn't happen in knockout (extra time/pens resolve it)
+      return m.homeScore > m.awayScore ? m.home : m.away
+    }
+    if (slot.l != null) {
+      const m = byId[`M${slot.l}`]
+      if (!m || m.homeScore === null || m.awayScore === null) return null
+      if (m.homeScore === m.awayScore) return null
+      return m.homeScore > m.awayScore ? m.away : m.home
+    }
+    return null
+  }
+
+  // Resolve in bracket order so later rounds can reference earlier winners
+  const byId = {}
+  const resolved = knockoutFixtures.map(m => {
+    const home = resolveSlot(m.home, byId)
+    const away = resolveSlot(m.away, byId)
+    const out = { ...m, home, away }
+    byId[m.id] = out
+    return out
+  })
+  return resolved
+}
+
+// Local copy to avoid circular import churn — kept in sync with data.js
+function GROUP_LABELS_LOCAL() {
+  return ['A','B','C','D','E','F','G','H','I','J','K','L']
 }
