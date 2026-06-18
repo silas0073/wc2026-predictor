@@ -154,3 +154,63 @@ export const FIXTURES = [
 ]
 
 export const GROUP_LABELS = ['A','B','C','D','E','F','G','H','I','J','K','L']
+
+// ---- KNOCKOUT STAGE (Round of 32 -> Final) ----
+// Real-results knockout bracket (separate from the prediction Bracket tab).
+// Slot notation for `home`/`away` before teams are determined:
+//   { g:'A', p:1 }      = Group A winner (p:2 = runner-up)
+//   { t3:['A','B',...]} = best 3rd-place team from the listed groups
+//   { w:73 }            = winner of match #73
+//   { l:101 }           = loser of match #101 (used only for 3rd place playoff)
+// Once resolved, `home`/`away` become plain team codes (filled in as data.js
+// is patched post-match, same workflow as group stage).
+export const KNOCKOUT_FIXTURES = [
+  // ROUND OF 32 (16 matches)
+  { id:'M73', round:'R32', date:'2026-06-28', kickoff:'2026-06-28T19:00Z', venue:'SoFi Stadium, Los Angeles',            home:{g:'A',p:2}, away:{g:'B',p:2}, homeScore:null, awayScore:null },
+  { id:'M76', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T17:00Z', venue:'NRG Stadium, Houston',                  home:{g:'C',p:1}, away:{g:'F',p:2}, homeScore:null, awayScore:null },
+  { id:'M74', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T20:30Z', venue:'Gillette Stadium, Foxborough',          home:{g:'E',p:1}, away:{t3:['A','B','C','D','F']}, homeScore:null, awayScore:null },
+  { id:'M75', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T01:00Z', venue:'Estadio Akron, Guadalajara',            home:{g:'F',p:1}, away:{g:'C',p:2}, homeScore:null, awayScore:null },
+  { id:'M78', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T17:00Z', venue:'AT&T Stadium, Arlington',               home:{g:'E',p:2}, away:{g:'I',p:2}, homeScore:null, awayScore:null },
+  { id:'M77', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T21:00Z', venue:'MetLife Stadium, East Rutherford',      home:{g:'I',p:1}, away:{t3:['C','D','F','G','H']}, homeScore:null, awayScore:null },
+  { id:'M79', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T01:00Z', venue:'Estadio Azteca, Mexico City',           home:{g:'A',p:1}, away:{t3:['C','E','F','H','I']}, homeScore:null, awayScore:null },
+  { id:'M80', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T16:00Z', venue:'Mercedes-Benz Stadium, Atlanta',        home:{g:'L',p:1}, away:{t3:['E','H','I','J','K']}, homeScore:null, awayScore:null },
+  { id:'M82', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T20:00Z', venue:'Lumen Field, Seattle',                  home:{g:'G',p:1}, away:{t3:['A','E','H','I','J']}, homeScore:null, awayScore:null },
+  { id:'M81', round:'R32', date:'2026-07-02', kickoff:'2026-07-02T00:00Z', venue:"Levi's Stadium, Santa Clara",           home:{g:'D',p:1}, away:{t3:['B','E','F','I','J']}, homeScore:null, awayScore:null },
+  { id:'M84', round:'R32', date:'2026-07-02', kickoff:'2026-07-02T19:00Z', venue:'SoFi Stadium, Los Angeles',             home:{g:'H',p:1}, away:{g:'J',p:2}, homeScore:null, awayScore:null },
+  { id:'M83', round:'R32', date:'2026-07-02', kickoff:'2026-07-02T23:00Z', venue:'BMO Field, Toronto',                    home:{g:'K',p:2}, away:{g:'L',p:2}, homeScore:null, awayScore:null },
+  { id:'M85', round:'R32', date:'2026-07-03', kickoff:'2026-07-03T03:00Z', venue:'BC Place, Vancouver',                   home:{g:'B',p:1}, away:{t3:['E','F','G','I','J']}, homeScore:null, awayScore:null },
+  { id:'M88', round:'R32', date:'2026-07-03', kickoff:'2026-07-03T18:00Z', venue:'AT&T Stadium, Arlington',               home:{g:'D',p:2}, away:{g:'G',p:2}, homeScore:null, awayScore:null },
+  { id:'M86', round:'R32', date:'2026-07-03', kickoff:'2026-07-03T22:00Z', venue:'Hard Rock Stadium, Miami',              home:{g:'J',p:1}, away:{g:'H',p:2}, homeScore:null, awayScore:null },
+  { id:'M87', round:'R32', date:'2026-07-04', kickoff:'2026-07-04T01:30Z', venue:'Arrowhead Stadium, Kansas City',        home:{g:'K',p:1}, away:{t3:['D','E','I','J','L']}, homeScore:null, awayScore:null },
+
+  // ROUND OF 16 (8 matches)
+  { id:'M90', round:'R16', date:'2026-07-04', kickoff:'2026-07-04T17:00Z', venue:'NRG Stadium, Houston',                  home:{w:73}, away:{w:75}, homeScore:null, awayScore:null },
+  { id:'M89', round:'R16', date:'2026-07-04', kickoff:'2026-07-04T21:00Z', venue:'Lincoln Financial Field, Philadelphia', home:{w:74}, away:{w:77}, homeScore:null, awayScore:null },
+  { id:'M91', round:'R16', date:'2026-07-05', kickoff:'2026-07-05T20:00Z', venue:'MetLife Stadium, East Rutherford',      home:{w:76}, away:{w:78}, homeScore:null, awayScore:null },
+  { id:'M92', round:'R16', date:'2026-07-06', kickoff:'2026-07-06T00:00Z', venue:'Estadio Azteca, Mexico City',           home:{w:79}, away:{w:80}, homeScore:null, awayScore:null },
+  { id:'M93', round:'R16', date:'2026-07-06', kickoff:'2026-07-06T19:00Z', venue:'AT&T Stadium, Arlington',               home:{w:83}, away:{w:84}, homeScore:null, awayScore:null },
+  { id:'M94', round:'R16', date:'2026-07-07', kickoff:'2026-07-07T00:00Z', venue:'Lumen Field, Seattle',                  home:{w:81}, away:{w:82}, homeScore:null, awayScore:null },
+  { id:'M95', round:'R16', date:'2026-07-07', kickoff:'2026-07-07T16:00Z', venue:'Mercedes-Benz Stadium, Atlanta',        home:{w:86}, away:{w:88}, homeScore:null, awayScore:null },
+  { id:'M96', round:'R16', date:'2026-07-07', kickoff:'2026-07-07T20:00Z', venue:'BC Place, Vancouver',                   home:{w:85}, away:{w:87}, homeScore:null, awayScore:null },
+
+  // QUARTER-FINALS (4 matches)
+  { id:'M97',  round:'QF', date:'2026-07-09', kickoff:'2026-07-09T20:00Z', venue:'Gillette Stadium, Foxborough',          home:{w:89}, away:{w:90}, homeScore:null, awayScore:null },
+  { id:'M98',  round:'QF', date:'2026-07-10', kickoff:'2026-07-10T19:00Z', venue:'SoFi Stadium, Los Angeles',             home:{w:93}, away:{w:94}, homeScore:null, awayScore:null },
+  { id:'M99',  round:'QF', date:'2026-07-11', kickoff:'2026-07-11T21:00Z', venue:'Hard Rock Stadium, Miami',              home:{w:91}, away:{w:92}, homeScore:null, awayScore:null },
+  { id:'M100', round:'QF', date:'2026-07-12', kickoff:'2026-07-12T01:00Z', venue:'Arrowhead Stadium, Kansas City',        home:{w:95}, away:{w:96}, homeScore:null, awayScore:null },
+
+  // SEMI-FINALS (2 matches)
+  { id:'M101', round:'SF', date:'2026-07-14', kickoff:'2026-07-14T19:00Z', venue:'AT&T Stadium, Arlington',               home:{w:97}, away:{w:98}, homeScore:null, awayScore:null },
+  { id:'M102', round:'SF', date:'2026-07-15', kickoff:'2026-07-15T19:00Z', venue:'Mercedes-Benz Stadium, Atlanta',        home:{w:99}, away:{w:100}, homeScore:null, awayScore:null },
+
+  // THIRD PLACE PLAYOFF
+  { id:'M103', round:'3RD', date:'2026-07-18', kickoff:'2026-07-18T21:00Z', venue:'Hard Rock Stadium, Miami',             home:{l:101}, away:{l:102}, homeScore:null, awayScore:null },
+
+  // FINAL
+  { id:'M104', round:'FINAL', date:'2026-07-19', kickoff:'2026-07-19T19:00Z', venue:'MetLife Stadium, East Rutherford',   home:{w:101}, away:{w:102}, homeScore:null, awayScore:null },
+]
+
+export const KNOCKOUT_ROUND_LABELS = {
+  R32: 'Round of 32', R16: 'Round of 16', QF: 'Quarter-finals',
+  SF: 'Semi-finals', '3RD': '3rd Place Playoff', FINAL: 'Final',
+}
