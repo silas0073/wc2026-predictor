@@ -89,10 +89,11 @@ export default async (req) => {
     const allEvents = []
 
     // ESPN scoreboard defaults to "today" — we need a date range covering the
-    // whole group stage (11 Jun - 27 Jun 2026). Fetch day-by-day in parallel.
+    // whole tournament (11 Jun group stage through 19 Jul final). Fetch
+    // day-by-day in parallel.
     const dates = []
     const start = new Date('2026-06-11')
-    const end = new Date('2026-06-28')
+    const end = new Date('2026-07-20')
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       dates.push(d.toISOString().slice(0,10).replace(/-/g,''))
     }
@@ -129,6 +130,9 @@ export default async (req) => {
         date: ev.date,
         goals: [],
         redCards: [],
+        // Penalty shootout scores, if the match went to pens (knockout only)
+        homeShootout: home?.shootoutScore != null ? Number(home.shootoutScore) : null,
+        awayShootout: away?.shootoutScore != null ? Number(away.shootoutScore) : null,
       }
 
       // Fetch events (goals + red cards) for played/in-progress matches
