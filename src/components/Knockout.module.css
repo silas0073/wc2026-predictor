@@ -18,7 +18,21 @@
 }
 .tree {
   display:flex; align-items:stretch; gap:0; min-width:max-content;
+  position:relative;
 }
+
+/* SVG connector layer: real elbow lines from each match to the two earlier
+   matches that feed into it, measured from actual DOM positions. Sits behind
+   the match cards (negative z-index) but in front of the column backgrounds. */
+.connectorLayer {
+  position:absolute; inset:0; width:100%; height:100%;
+  overflow:visible; pointer-events:none; z-index:-1;
+}
+.connectorPending, .connectorResolved {
+  fill:none; stroke-width:2px;
+}
+.connectorPending { stroke:rgba(148,163,184,.35); }
+.connectorResolved { stroke:rgba(148,163,184,.85); }
 
 .column {
   display:flex; flex-direction:column;
@@ -42,29 +56,20 @@
 
 .matchList_R32 > .match { flex:0 0 auto; }
 .matchList_R16 { justify-content:space-around; }
-.matchList_R16 > .match { margin: 0 8px; position:relative; }
+.matchList_R16 > .match { margin: 0 8px; }
 .matchList_QF { justify-content:space-around; }
-.matchList_QF > .match { margin: 0 8px; position:relative; }
+.matchList_QF > .match { margin: 0 8px; }
 .matchList_SF { justify-content:space-around; }
-.matchList_SF > .match { margin: 0 8px; position:relative; }
+.matchList_SF > .match { margin: 0 8px; }
 .matchList_FINAL { justify-content:center; }
 .matchList_FINAL > .match { margin: 0 8px; }
-
-/* Connector lines: a horizontal stub on the left edge of every match card
-   from R16 onward, drawn with pseudo-elements. */
-.matchList_R16 > .match::before,
-.matchList_QF > .match::before,
-.matchList_SF > .match::before {
-  content:''; position:absolute; left:-8px; top:50%; width:8px; height:1px;
-  background:var(--border);
-}
 
 .thirdPlaceSection { margin-top:24px; max-width:220px; }
 
 /* ---- Match card ---- */
 .match {
   background:var(--bg2); border:1px solid var(--border); border-radius:10px;
-  padding:8px 10px; transition:border-color .2s;
+  padding:8px 10px; transition:border-color .2s; position:relative;
 }
 .match.played { border-color:rgba(245,197,24,.18); }
 .match.live { border-color:rgba(0,212,106,.5); background:rgba(0,212,106,.04); }
