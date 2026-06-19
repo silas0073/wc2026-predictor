@@ -22,17 +22,19 @@
 }
 
 /* SVG connector layer: real elbow lines from each match to the two earlier
-   matches that feed into it, measured from actual DOM positions. Sits behind
-   the match cards (negative z-index) but in front of the column backgrounds. */
+   matches that feed into it, measured from actual DOM positions. Sized to
+   exact pixel dimensions of .tree (not %, which is unreliable on an
+   absolutely-positioned element) and pointer-events:none so it never blocks
+   clicks on the cards underneath. */
 .connectorLayer {
-  position:absolute; inset:0; width:100%; height:100%;
-  overflow:visible; pointer-events:none; z-index:-1;
+  position:absolute; top:0; left:0;
+  pointer-events:none;
 }
 .connectorPending, .connectorResolved {
-  fill:none; stroke-width:2px;
+  fill:none; stroke-width:2px; stroke-linecap:round;
 }
-.connectorPending { stroke:rgba(148,163,184,.35); }
-.connectorResolved { stroke:rgba(148,163,184,.85); }
+.connectorPending { stroke:rgba(148,163,184,.4); }
+.connectorResolved { stroke:rgba(148,163,184,.9); }
 
 .column {
   display:flex; flex-direction:column;
