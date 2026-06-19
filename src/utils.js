@@ -132,12 +132,18 @@ export function resolveKnockoutFixtures(fixtures = FIXTURES, knockoutFixtures = 
     return null
   }
 
-  // Resolve in bracket order so later rounds can reference earlier winners
+  // Resolve in bracket order so later rounds can reference earlier winners.
+  // homeSlot/awaySlot preserve the ORIGINAL slot descriptor ({g,p}/{t3}/{w}/{l})
+  // separately from the resolved team code, so callers can a) re-resolve on a
+  // later pass once more results are in (live cascade), and b) render a
+  // human-readable placeholder like "Winner Group A" while still TBD.
   const byId = {}
   const resolved = knockoutFixtures.map(m => {
-    const home = resolveSlot(m.home, byId)
-    const away = resolveSlot(m.away, byId)
-    const out = { ...m, home, away }
+    const homeSlot = m.homeSlot !== undefined ? m.homeSlot : m.home
+    const awaySlot = m.awaySlot !== undefined ? m.awaySlot : m.away
+    const home = resolveSlot(homeSlot, byId)
+    const away = resolveSlot(awaySlot, byId)
+    const out = { ...m, home, away, homeSlot, awaySlot }
     byId[m.id] = out
     return out
   })
