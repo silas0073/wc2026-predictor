@@ -72,6 +72,7 @@ export default function Knockout({ fixtures = [] }) {
   const treeRef = useRef(null)
   const matchRefs = useRef({})
   const [paths, setPaths] = useState([])
+  const [treeSize, setTreeSize] = useState({ w: 0, h: 0 })
 
   const registerRef = useCallback((id, el) => {
     if (el) matchRefs.current[id] = el
@@ -87,6 +88,7 @@ export default function Knockout({ fixtures = [] }) {
       const container = treeRef.current
       if (!container) return
       const cRect = container.getBoundingClientRect()
+      setTreeSize({ w: cRect.width, h: cRect.height })
       const next = []
       const addConnection = (sourceId, targetId, resolved) => {
         const sEl = matchRefs.current[sourceId]
@@ -110,11 +112,14 @@ export default function Knockout({ fixtures = [] }) {
       setPaths(next)
     }
 
+    // Run after fonts/images settle too (card heights can shift slightly on
+    // first paint), not just immediately — a couple of rAF passes covers it.
     compute()
+    const raf1 = requestAnimationFrame(() => requestAnimationFrame(compute))
     const ro = new ResizeObserver(compute)
     if (treeRef.current) ro.observe(treeRef.current)
     window.addEventListener('resize', compute)
-    return () => { ro.disconnect(); window.removeEventListener('resize', compute) }
+    return () => { cancelAnimationFrame(raf1); ro.disconnect(); window.removeEventListener('resize', compute) }
   }, [fixtures])
 
   const startsIn = (() => {
@@ -149,11 +154,6 @@ export default function Knockout({ fixtures = [] }) {
       {/* Horizontally scrollable connected tree */}
       <div className={styles.treeScroll}>
         <div className={styles.tree} ref={treeRef}>
-          <svg className={styles.connectorLayer}>
-            {paths.map(p => (
-              <path key={p.key} d={p.d} className={p.resolved ? styles.connectorResolved : styles.connectorPending} />
-            ))}
-          </svg>
           {ROUND_ORDER.map(r => (
             <div key={r} className={styles.column}>
               <div className={styles.columnHeader}>{KNOCKOUT_ROUND_LABELS[r]}</div>
@@ -162,6 +162,17 @@ export default function Knockout({ fixtures = [] }) {
               </div>
             </div>
           ))}
+          <svg
+            className={styles.connectorLayer}
+            width={treeSize.w}
+            height={treeSize.h}
+            viewBox={`0 0 ${treeSize.w} ${treeSize.h}`}
+            preserveAspectRatio="none"
+          >
+            {paths.map(p => (
+              <path key={p.key} d={p.d} className={p.resolved ? styles.connectorResolved : styles.connectorPending} />
+            ))}
+          </svg>
         </div>
       </div>
 
