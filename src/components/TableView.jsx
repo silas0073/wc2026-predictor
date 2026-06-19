@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { GROUP_LABELS, FIXTURES } from '../data.js'
-import { groupStandings } from '../utils.js'
+import { groupStandings, getQualifiedTeams } from '../utils.js'
 import styles from './TableView.module.css'
 
-function GroupTable({ group, predictions, fixtures }) {
+function GroupTable({ group, predictions, fixtures, qualified }) {
   const rows = groupStandings(group, predictions, fixtures)
-  const hasPred = rows.some(r => r.P > 0)
 
   return (
     <div className={styles.groupBlock}>
@@ -29,6 +28,7 @@ function GroupTable({ group, predictions, fixtures }) {
                 <span>{r.team.flag}</span>
                 <span className={styles.tname}>{r.team.name}</span>
                 <span className={styles.tcode}>{r.code}</span>
+                {qualified.has(r.code) && <span className={styles.qBadge} title="Qualified for knockout stage">✓</span>}
               </td>
               <td>{r.P}</td><td>{r.W}</td><td>{r.D}</td><td>{r.L}</td>
               <td className={styles.hideSm}>{r.GF}</td>
@@ -47,6 +47,7 @@ export default function TableView({ predictions, fixtures = FIXTURES }) {
   const [view, setView] = useState('all')
 
   const groups = view === 'all' ? GROUP_LABELS : [view]
+  const qualified = getQualifiedTeams(fixtures)
 
   return (
     <div className={styles.wrap}>
@@ -63,12 +64,13 @@ export default function TableView({ predictions, fixtures = FIXTURES }) {
       </div>
 
       <div className={`${styles.grid} ${view !== 'all' ? styles.single : ''}`}>
-        {groups.map(g => <GroupTable key={g} group={g} predictions={{}} fixtures={fixtures} />)}
+        {groups.map(g => <GroupTable key={g} group={g} predictions={{}} fixtures={fixtures} qualified={qualified} />)}
       </div>
 
       <div className={styles.legend}>
         <div className={styles.legendItem}><span className={`${styles.pip} ${styles.pipGold}`}/> Automatic qualification (top 2)</div>
         <div className={styles.legendItem}><span className={`${styles.pip} ${styles.pipGreen}`}/> Possible 3rd-place qualification (best 8)</div>
+        <div className={styles.legendItem}><span className={styles.qBadge}>✓</span> Confirmed qualified for knockout stage</div>
       </div>
     </div>
   )
