@@ -70,6 +70,39 @@ export function autoFillGroup(groupLetter, existing = {}) {
   return result
 }
 
+// Returns the set of team codes that have ACTUALLY qualified for the
+// knockout stage — i.e. their group has fully played out (all 6 fixtures
+// have real scores) and they finished top-2, or they're confirmed in the
+// best-8 third-place teams (only knowable once every group is complete).
+// Distinct from "currently sitting in a qualifying position" — a team in
+// 2nd place mid-group hasn't qualified yet, just provisionally there.
+export function getQualifiedTeams(allFixtures = FIXTURES) {
+  const groupDone = {}
+  GROUP_LABELS_LOCAL().forEach(g => {
+    const gFixtures = allFixtures.filter(f => f.group === g)
+    groupDone[g] = gFixtures.length > 0 && gFixtures.every(f => f.homeScore !== null && f.awayScore !== null)
+  })
+
+  const qualified = new Set()
+  const thirds = []
+  GROUP_LABELS_LOCAL().forEach(g => {
+    if (!groupDone[g]) return
+    const rows = groupStandings(g, {}, allFixtures)
+    if (rows[0]) qualified.add(rows[0].code)
+    if (rows[1]) qualified.add(rows[1].code)
+    if (rows[2]) thirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+  })
+
+  const allDone = GROUP_LABELS_LOCAL().every(g => groupDone[g])
+  if (allDone) {
+    thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf)
+      .slice(0, 8)
+      .forEach(b => qualified.add(b.code))
+  }
+
+  return qualified
+}
+
 // Resolves knockout slot descriptors ({g,p} / {t3} / {w} / {l}) into real
 // team codes using REAL group results only (no predictions). A group's
 // standings are only considered "final" once all 6 of its fixtures have a
