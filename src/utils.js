@@ -70,12 +70,65 @@ export function autoFillGroup(groupLetter, existing = {}) {
   return result
 }
 
+// Determines which teams in a group have MATHEMATICALLY clinched a top-2
+// (knockout) spot, even if the group isn't finished yet. Does this properly
+// — by brute-force enumerating every possible win/draw/loss outcome for the
+// group's remaining fixtures (max 6 remaining in a 4-team group, so at most
+// 3^6 = 729 combinations, trivial to check) — rather than evaluating each
+// team's best/worst case independently. That matters because independent
+// ceilings overcount danger: if two chasing teams still have to play each
+// other, they can't BOTH win that match, so checking them independently
+// produces false "still in danger" results. Brute force respects that.
+//
+// Only points are used to rank within each hypothetical outcome (not GD/GF),
+// so this deliberately stays conservative around exact points-ties — a team
+// isn't called "clinched" if some combination of remaining results could
+// leave it level on points with 2+ others, even if its current goal
+// difference makes that practically certain to resolve in its favour. That
+// asymmetry is intentional: a confirmed-qualified badge should never be
+// wrong, even if it occasionally lags an early "team X is through" headline
+// by a day in a rare three-way-tie edge case.
+function clinchedGroupQualifiers(groupLetter, allFixtures) {
+  const rows = groupStandings(groupLetter, {}, allFixtures)
+  const teamCodes = rows.map(r => r.code)
+  const currentPts = Object.fromEntries(rows.map(r => [r.code, r.Pts]))
+
+  const gFixtures = allFixtures.filter(f => f.group === groupLetter)
+  const remaining = gFixtures.filter(f => f.homeScore === null || f.awayScore === null)
+
+  if (remaining.length === 0) return new Set(teamCodes.slice(0, 2))
+  if (remaining.length > 6) return new Set() // safety guard, shouldn't happen for a 4-team group
+
+  const safe = Object.fromEntries(teamCodes.map(c => [c, true]))
+  const totalCombos = Math.pow(3, remaining.length)
+
+  for (let combo = 0; combo < totalCombos; combo++) {
+    const pts = { ...currentPts }
+    let c = combo
+    for (let i = 0; i < remaining.length; i++) {
+      const outcome = c % 3; c = Math.floor(c / 3)
+      const f = remaining[i]
+      if (outcome === 0) pts[f.home] += 3                          // home win
+      else if (outcome === 1) { pts[f.home] += 1; pts[f.away] += 1 } // draw
+      else pts[f.away] += 3                                         // away win
+    }
+    teamCodes.forEach(code => {
+      const threats = teamCodes.filter(o => o !== code && pts[o] >= pts[code]).length
+      if (threats >= 2) safe[code] = false
+    })
+  }
+
+  return new Set(teamCodes.filter(c => safe[c]))
+}
+
 // Returns the set of team codes that have ACTUALLY qualified for the
-// knockout stage — i.e. their group has fully played out (all 6 fixtures
-// have real scores) and they finished top-2, or they're confirmed in the
-// best-8 third-place teams (only knowable once every group is complete).
-// Distinct from "currently sitting in a qualifying position" — a team in
-// 2nd place mid-group hasn't qualified yet, just provisionally there.
+// knockout stage. Top-2 spots use mathematical clinch detection so a team
+// shows as qualified the moment it's locked in (often before its group
+// finishes). Best-8 third-place qualification can only be confirmed once
+// every group has fully played out, since it depends on final standings
+// across all 12 groups. Distinct from "currently sitting in a qualifying
+// position" — a team in 2nd place isn't shown as qualified just because
+// it's provisionally there if it could still be caught.
 export function getQualifiedTeams(allFixtures = FIXTURES) {
   const groupDone = {}
   GROUP_LABELS_LOCAL().forEach(g => {
@@ -86,11 +139,13 @@ export function getQualifiedTeams(allFixtures = FIXTURES) {
   const qualified = new Set()
   const thirds = []
   GROUP_LABELS_LOCAL().forEach(g => {
-    if (!groupDone[g]) return
-    const rows = groupStandings(g, {}, allFixtures)
-    if (rows[0]) qualified.add(rows[0].code)
-    if (rows[1]) qualified.add(rows[1].code)
-    if (rows[2]) thirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+    const gFixtures = allFixtures.filter(f => f.group === g)
+    if (gFixtures.length === 0) return
+    clinchedGroupQualifiers(g, allFixtures).forEach(code => qualified.add(code))
+    if (groupDone[g]) {
+      const rows = groupStandings(g, {}, allFixtures)
+      if (rows[2]) thirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+    }
   })
 
   const allDone = GROUP_LABELS_LOCAL().every(g => groupDone[g])
