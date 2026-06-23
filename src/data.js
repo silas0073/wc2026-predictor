@@ -322,7 +322,7 @@ export const FIXTURES = [
       { team:'POR', name:'Rafael Leao', minute:"67'" },
       { team:'POR', name:'Bruno Fernandes', minute:"85'" },
     ] },
-  { id:'K4', group:'K', md:2, date:'2026-06-23', kickoff:'2026-06-23T20:00Z', home:'COL', away:'COD', venue:'Estadio Akron, Guadalajara',           homeScore:null, awayScore:null },
+  { id:'K4', group:'K', md:2, date:'2026-06-23', kickoff:'2026-06-24T02:00Z', home:'COL', away:'COD', venue:'Estadio Akron, Guadalajara',           homeScore:null, awayScore:null },
   { id:'K5', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COD', away:'UZB', venue:'Mercedes-Benz Stadium, Atlanta',       homeScore:null, awayScore:null },
   { id:'K6', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COL', away:'POR', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
   // GROUP L
