@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { GROUP_LABELS, FIXTURES } from '../data.js'
+import { GROUP_LABELS, FIXTURES, TEAMS } from '../data.js'
 import { groupStandings, getQualifiedTeams, getThirdPlaceStandings } from '../utils.js'
 import styles from './TableView.module.css'
 
@@ -28,7 +28,7 @@ function ThirdPlaceTracker({ fixtures }) {
         </thead>
         <tbody>
           {thirds.map((t, i) => {
-            const { TEAMS } = require ? {} : {}
+            const team = TEAMS[t.code]
             return (
               <tr key={t.code} className={
                 t.status === 'qualified' ? styles.qualify :
@@ -37,8 +37,8 @@ function ThirdPlaceTracker({ fixtures }) {
               }>
                 <td className={styles.pos}>{i + 1}</td>
                 <td className={styles.teamCell}>
-                  <span>{t.flag || ''}</span>
-                  <span className={styles.tcode}>{t.code}</span>
+                  <span>{team?.flag || ''}</span>
+                  <span className={styles.tname}>{team?.name || t.code}</span>
                   {t.status === 'qualified' && <span className={styles.qBadge} title="Confirmed qualified">✓</span>}
                 </td>
                 <td>{t.group}</td>
