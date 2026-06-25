@@ -124,38 +124,103 @@ function clinchedGroupQualifiers(groupLetter, allFixtures) {
 // Returns the set of team codes that have ACTUALLY qualified for the
 // knockout stage. Top-2 spots use mathematical clinch detection so a team
 // shows as qualified the moment it's locked in (often before its group
-// finishes). Best-8 third-place qualification can only be confirmed once
-// every group has fully played out, since it depends on final standings
-// across all 12 groups. Distinct from "currently sitting in a qualifying
-// position" — a team in 2nd place isn't shown as qualified just because
-// it's provisionally there if it could still be caught.
+// finishes). Best-8 third-place spots use progressive clinch detection:
+// once a group is done its 3rd-place team is "locked" with fixed stats.
+// A locked 3rd-placer is confirmed qualified when even assuming every
+// remaining (unfinished) group produces a 3rd-placer that beats it in
+// the tiebreaker order (pts → GD → GF), there still aren't 8 teams
+// ahead of it — i.e. lockedAhead + unfinishedGroupsRemaining < 8.
+// This avoids waiting for all 12 groups to complete before showing any
+// 3rd-place qualification badges.
 export function getQualifiedTeams(allFixtures = FIXTURES) {
+  const GROUPS_ALL = GROUP_LABELS_LOCAL()
   const groupDone = {}
-  GROUP_LABELS_LOCAL().forEach(g => {
+  GROUPS_ALL.forEach(g => {
     const gFixtures = allFixtures.filter(f => f.group === g)
     groupDone[g] = gFixtures.length > 0 && gFixtures.every(f => f.homeScore !== null && f.awayScore !== null)
   })
 
   const qualified = new Set()
-  const thirds = []
-  GROUP_LABELS_LOCAL().forEach(g => {
+  const lockedThirds = []   // 3rd-placers from finished groups (stats are final)
+
+  GROUPS_ALL.forEach(g => {
     const gFixtures = allFixtures.filter(f => f.group === g)
     if (gFixtures.length === 0) return
     clinchedGroupQualifiers(g, allFixtures).forEach(code => qualified.add(code))
     if (groupDone[g]) {
       const rows = groupStandings(g, {}, allFixtures)
-      if (rows[2]) thirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+      if (rows[2]) lockedThirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
     }
   })
 
-  const allDone = GROUP_LABELS_LOCAL().every(g => groupDone[g])
-  if (allDone) {
-    thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf)
-      .slice(0, 8)
-      .forEach(b => qualified.add(b.code))
+  const unfinishedCount = GROUPS_ALL.filter(g => !groupDone[g]).length
+
+  // Compare two 3rd-place entries: returns true if a beats b in ranking order
+  function beats(a, b) {
+    if (a.pts !== b.pts) return a.pts > b.pts
+    if (a.gd  !== b.gd)  return a.gd  > b.gd
+    return a.gf > b.gf
   }
 
+  // A locked 3rd-placer is confirmed qualified if:
+  // (# of locked teams strictly ranked above it) + unfinishedCount < 8
+  lockedThirds.forEach(team => {
+    const lockedAhead = lockedThirds.filter(other => other.code !== team.code && beats(other, team)).length
+    if (lockedAhead + unfinishedCount < 8) {
+      qualified.add(team.code)
+    }
+  })
+
   return qualified
+}
+
+// Returns all locked 3rd-place teams with their current qualification status.
+// Used by the UI to show a live "Best 3rd-Place" tracker table.
+// status: 'qualified' | 'pending' | 'eliminated'
+export function getThirdPlaceStandings(allFixtures = FIXTURES) {
+  const GROUPS_ALL = GROUP_LABELS_LOCAL()
+  const groupDone = {}
+  GROUPS_ALL.forEach(g => {
+    const gFixtures = allFixtures.filter(f => f.group === g)
+    groupDone[g] = gFixtures.length > 0 && gFixtures.every(f => f.homeScore !== null && f.awayScore !== null)
+  })
+
+  const lockedThirds = []
+  GROUPS_ALL.forEach(g => {
+    if (!groupDone[g]) return
+    const rows = groupStandings(g, {}, allFixtures)
+    if (rows[2]) lockedThirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+  })
+
+  const unfinishedCount = GROUPS_ALL.filter(g => !groupDone[g]).length
+  const groupsDone = lockedThirds.length
+
+  function beats(a, b) {
+    if (a.pts !== b.pts) return a.pts > b.pts
+    if (a.gd  !== b.gd)  return a.gd  > b.gd
+    return a.gf > b.gf
+  }
+
+  // Sort locked thirds by ranking
+  const sorted = [...lockedThirds].sort((a, b) => beats(a, b) ? -1 : beats(b, a) ? 1 : 0)
+
+  return sorted.map((team, idx) => {
+    const lockedAhead = sorted.filter((o, i) => i < idx).length // rank by position in sorted list
+    const lockedBehind = sorted.length - 1 - idx
+
+    let status
+    if (lockedAhead + unfinishedCount < 8) {
+      status = 'qualified'  // even if all remaining groups produce better 3rds, this team is still top-8
+    } else if (lockedBehind + unfinishedCount < (12 - 8)) {
+      // There aren't enough teams that could surpass this one to push it out of top-8
+      // Effectively: lockedAhead >= 8 already means eliminated
+      status = lockedAhead >= 8 ? 'eliminated' : 'pending'
+    } else {
+      status = lockedAhead >= 8 ? 'eliminated' : 'pending'
+    }
+
+    return { ...team, rank: idx + 1, status }
+  })
 }
 
 // Resolves knockout slot descriptors ({g,p} / {t3} / {w} / {l}) into real
