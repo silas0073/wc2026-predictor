@@ -99,3 +99,9 @@
 .statusQ { color: var(--green); font-weight: 700; font-size: .7rem; }
 .statusE { color: var(--red); font-size: .7rem; }
 .statusP { color: var(--muted2); font-size: .7rem; }
+.liveTag {
+  font-size: .55rem; font-weight: 700; text-transform: uppercase;
+  color: var(--gold); border: 1px solid var(--gold);
+  border-radius: 3px; padding: 1px 3px; margin-left: 4px; letter-spacing: .05em;
+}
+.statusL { color: var(--muted2); font-size: .7rem; }
