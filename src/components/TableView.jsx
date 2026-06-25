@@ -10,9 +10,10 @@ function ThirdPlaceTracker({ fixtures }) {
     const gf = fixtures.filter(f => f.group === g)
     return gf.length > 0 && gf.every(f => f.homeScore !== null && f.awayScore !== null)
   })
-  const unfinished = 12 - finishedGroups.length
-
-  if (thirds.length === 0) return null
+  const notStarted = GROUPS_ALL.filter(g => {
+    const gf = fixtures.filter(f => f.group === g)
+    return !gf.some(f => f.homeScore !== null)
+  })
 
   return (
     <div className={styles.thirdTracker}>
@@ -40,25 +41,27 @@ function ThirdPlaceTracker({ fixtures }) {
                   <span>{team?.flag || ''}</span>
                   <span className={styles.tname}>{team?.name || t.code}</span>
                   {t.status === 'qualified' && <span className={styles.qBadge} title="Confirmed qualified">✓</span>}
+                  {!t.locked && <span className={styles.liveTag}>live</span>}
                 </td>
                 <td>{t.group}</td>
                 <td className={styles.pts}>{t.pts}</td>
                 <td className={t.gd > 0 ? styles.pos_gd : t.gd < 0 ? styles.neg_gd : ''}>{t.gd > 0 ? `+${t.gd}` : t.gd}</td>
                 <td>{t.gf}</td>
                 <td className={styles.t3status}>
-                  {t.status === 'qualified' ? <span className={styles.statusQ}>Qualified</span> :
+                  {t.status === 'qualified' ? <span className={styles.statusQ}>Qualified ✓</span> :
                    t.status === 'eliminated' ? <span className={styles.statusE}>Eliminated</span> :
-                   <span className={styles.statusP}>Pending ({unfinished} left)</span>}
+                   t.locked ? <span className={styles.statusL}>Final</span> :
+                   <span className={styles.statusP}>In progress</span>}
                 </td>
               </tr>
             )
           })}
-          {Array.from({ length: Math.max(0, 8 - thirds.length) }).map((_, i) => (
-            <tr key={`tbd-${i}`} className={styles.tbd}>
+          {notStarted.map((g, i) => (
+            <tr key={`ns-${g}`} className={styles.tbd}>
               <td className={styles.pos}>{thirds.length + i + 1}</td>
-              <td className={styles.teamCell}><span className={styles.tbdCell}>—</span></td>
-              <td>—</td><td>—</td><td>—</td><td>—</td>
-              <td className={styles.t3status}><span className={styles.statusP}>Pending</span></td>
+              <td className={styles.teamCell}><span className={styles.tbdCell}>Group {g}</span></td>
+              <td>{g}</td><td>—</td><td>—</td><td>—</td>
+              <td className={styles.t3status}><span className={styles.statusP}>Not started</span></td>
             </tr>
           ))}
         </tbody>
