@@ -174,9 +174,10 @@ export function getQualifiedTeams(allFixtures = FIXTURES) {
   return qualified
 }
 
-// Returns all locked 3rd-place teams with their current qualification status.
-// Used by the UI to show a live "Best 3rd-Place" tracker table.
+// Returns ALL 12 groups' current 3rd-place teams (including in-progress groups),
+// ranked live by pts → GD → GF. Groups with no played matches show no entry.
 // status: 'qualified' | 'pending' | 'eliminated'
+// locked: true if the group is fully complete (stats are final)
 export function getThirdPlaceStandings(allFixtures = FIXTURES) {
   const GROUPS_ALL = GROUP_LABELS_LOCAL()
   const groupDone = {}
@@ -185,15 +186,28 @@ export function getThirdPlaceStandings(allFixtures = FIXTURES) {
     groupDone[g] = gFixtures.length > 0 && gFixtures.every(f => f.homeScore !== null && f.awayScore !== null)
   })
 
-  const lockedThirds = []
+  // Collect current 3rd-place team from every group that has played at least 1 match
+  const allThirds = []
   GROUPS_ALL.forEach(g => {
-    if (!groupDone[g]) return
+    const gFixtures = allFixtures.filter(f => f.group === g)
+    const hasStarted = gFixtures.some(f => f.homeScore !== null)
+    if (!hasStarted) return
     const rows = groupStandings(g, {}, allFixtures)
-    if (rows[2]) lockedThirds.push({ group: g, code: rows[2].code, pts: rows[2].Pts, gd: rows[2].GD, gf: rows[2].GF })
+    if (rows[2]) allThirds.push({
+      group: g,
+      code: rows[2].code,
+      pts: rows[2].Pts,
+      gd: rows[2].GD,
+      gf: rows[2].GF,
+      locked: groupDone[g]
+    })
   })
 
-  const unfinishedCount = GROUPS_ALL.filter(g => !groupDone[g]).length
-  const groupsDone = lockedThirds.length
+  // Count groups with no started matches (still completely TBD)
+  const notStartedCount = GROUPS_ALL.filter(g => {
+    const gFixtures = allFixtures.filter(f => f.group === g)
+    return !gFixtures.some(f => f.homeScore !== null)
+  }).length
 
   function beats(a, b) {
     if (a.pts !== b.pts) return a.pts > b.pts
@@ -201,22 +215,23 @@ export function getThirdPlaceStandings(allFixtures = FIXTURES) {
     return a.gf > b.gf
   }
 
-  // Sort locked thirds by ranking
-  const sorted = [...lockedThirds].sort((a, b) => beats(a, b) ? -1 : beats(b, a) ? 1 : 0)
+  const sorted = [...allThirds].sort((a, b) => beats(a, b) ? -1 : beats(b, a) ? 1 : 0)
+
+  // Qualification logic only uses LOCKED (finished) groups
+  const lockedThirds = sorted.filter(t => t.locked)
+  const unfinishedCount = GROUPS_ALL.filter(g => !groupDone[g]).length
 
   return sorted.map((team, idx) => {
-    const lockedAhead = sorted.filter((o, i) => i < idx).length // rank by position in sorted list
-    const lockedBehind = sorted.length - 1 - idx
-
+    // For confirmed qualification: only locked teams can be confirmed
+    // A locked team is qualified if even worst case (all remaining produce better 3rds) it stays top-8
+    const lockedAhead = lockedThirds.filter(o => o.code !== team.code && beats(o, team)).length
     let status
-    if (lockedAhead + unfinishedCount < 8) {
-      status = 'qualified'  // even if all remaining groups produce better 3rds, this team is still top-8
-    } else if (lockedBehind + unfinishedCount < (12 - 8)) {
-      // There aren't enough teams that could surpass this one to push it out of top-8
-      // Effectively: lockedAhead >= 8 already means eliminated
-      status = lockedAhead >= 8 ? 'eliminated' : 'pending'
+    if (team.locked && lockedAhead + unfinishedCount < 8) {
+      status = 'qualified'
+    } else if (team.locked && lockedAhead >= 8) {
+      status = 'eliminated'
     } else {
-      status = lockedAhead >= 8 ? 'eliminated' : 'pending'
+      status = 'pending'
     }
 
     return { ...team, rank: idx + 1, status }
