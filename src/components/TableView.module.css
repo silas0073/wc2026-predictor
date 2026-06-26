@@ -105,3 +105,21 @@
   border-radius: 3px; padding: 1px 3px; margin-left: 4px; letter-spacing: .05em;
 }
 .statusL { color: var(--muted2); font-size: .7rem; }
+.cutLine td {
+  padding: 0;
+  border-top: 2px solid var(--gold);
+  position: relative;
+  font-size: 0;
+}
+.cutLine span {
+  position: absolute;
+  right: 12px;
+  top: -9px;
+  font-size: .6rem;
+  font-weight: 600;
+  color: var(--gold);
+  background: var(--card);
+  padding: 0 6px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
