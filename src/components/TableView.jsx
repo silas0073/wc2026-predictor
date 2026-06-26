@@ -31,7 +31,13 @@ function ThirdPlaceTracker({ fixtures }) {
           {thirds.map((t, i) => {
             const team = TEAMS[t.code]
             return (
-              <tr key={t.code} className={
+              <React.Fragment key={t.code}>
+              {i === 8 && (
+                <tr className={styles.cutLine}>
+                  <td colSpan={7}><span>Qualification line</span></td>
+                </tr>
+              )}
+              <tr className={
                 t.status === 'qualified' ? styles.qualify :
                 t.status === 'eliminated' ? styles.eliminated :
                 styles.maybe
@@ -54,6 +60,7 @@ function ThirdPlaceTracker({ fixtures }) {
                    <span className={styles.statusP}>In progress</span>}
                 </td>
               </tr>
+              </React.Fragment>
             )
           })}
           {notStarted.map((g, i) => (
