@@ -271,7 +271,7 @@ export const FIXTURES = [
       { team:'NOR', name:'Leo Ostigard', minute:"70'" },
       { team:'SEN', name:'Ismaila Sarr', minute:"90+5'" },
     ] },
-  { id:'I5', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'NOR', away:'FRA', venue:'Gillette Stadium, Boston',             homeScore:4, awayScore:1 },
+  { id:'I5', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'NOR', away:'FRA', venue:'Gillette Stadium, Boston',             homeScore:1, awayScore:4 },
   { id:'I6', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'SEN', away:'IRQ', venue:'BMO Field, Toronto',                   homeScore:5, awayScore:0 },
   // GROUP J
   { id:'J1', group:'J', md:1, date:'2026-06-16', kickoff:'2026-06-17T01:00Z', home:'ARG', away:'ALG', venue:'Arrowhead Stadium, Kansas City',       homeScore:3, awayScore:0,
