@@ -272,6 +272,34 @@ export function resolveKnockoutFixtures(fixtures = FIXTURES, knockoutFixtures = 
     best8 = thirds.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf).slice(0,8)
   }
 
+  // Pre-build a one-to-one map: group -> fixture slot (e.g. 'F' -> 'M74')
+  // so each best-3rd team is assigned to exactly ONE slot.
+  // We iterate t3 slots in bracket order and greedily assign each best8 team
+  // to the first slot whose group list contains that team's group.
+  const t3Assignment = {} // group letter -> team code
+  if (best8 && allGroupsDone) {
+    const t3Slots = knockoutFixtures
+      .filter(m => {
+        const homeSlot = m.homeSlot !== undefined ? m.homeSlot : m.home
+        const awaySlot = m.awaySlot !== undefined ? m.awaySlot : m.away
+        return (homeSlot && homeSlot.t3) || (awaySlot && awaySlot.t3)
+      })
+      .map(m => {
+        const homeSlot = m.homeSlot !== undefined ? m.homeSlot : m.home
+        const awaySlot = m.awaySlot !== undefined ? m.awaySlot : m.away
+        return (homeSlot && homeSlot.t3) ? homeSlot.t3 : awaySlot.t3
+      })
+    // Sort best8 by pts desc, gd desc, gf desc (already sorted)
+    const unassigned = [...best8]
+    for (const groupList of t3Slots) {
+      const idx = unassigned.findIndex(b => groupList.includes(b.group))
+      if (idx !== -1) {
+        const team = unassigned.splice(idx, 1)[0]
+        t3Assignment[team.group] = team.code
+      }
+    }
+  }
+
   const resolveSlot = (slot, byId) => {
     if (typeof slot === 'string') return slot // already resolved
     if (!slot) return null
@@ -282,8 +310,9 @@ export function resolveKnockoutFixtures(fixtures = FIXTURES, knockoutFixtures = 
     }
     if (slot.t3) {
       if (!best8) return null
-      const match = best8.find(b => slot.t3.includes(b.group))
-      return match?.code || null
+      // Find which best8 group has been assigned to a slot matching this t3 list
+      const group = best8.find(b => slot.t3.includes(b.group) && t3Assignment[b.group])
+      return group ? t3Assignment[group.group] || null : null
     }
     if (slot.w != null) {
       const m = byId[`M${slot.w}`]
