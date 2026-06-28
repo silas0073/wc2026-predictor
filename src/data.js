@@ -72,8 +72,8 @@ export const FIXTURES = [
     goals: [
       { team:'MEX', name:'Luis Romo', minute:"50'" },
     ] },
-  { id:'A5', group:'A', md:3, date:'2026-06-25', kickoff:'2026-06-25T01:00Z', home:'CZE', away:'MEX', venue:'Estadio Azteca, Mexico City',          homeScore:null, awayScore:null },
-  { id:'A6', group:'A', md:3, date:'2026-06-25', kickoff:'2026-06-25T01:00Z', home:'RSA', away:'KOR', venue:'Estadio BBVA, Monterrey',              homeScore:null, awayScore:null },
+  { id:'A5', group:'A', md:3, date:'2026-06-25', kickoff:'2026-06-25T01:00Z', home:'CZE', away:'MEX', venue:'Estadio Azteca, Mexico City',          homeScore:0, awayScore:3 },
+  { id:'A6', group:'A', md:3, date:'2026-06-25', kickoff:'2026-06-25T01:00Z', home:'RSA', away:'KOR', venue:'Estadio BBVA, Monterrey',              homeScore:1, awayScore:0 },
   // GROUP B
   { id:'B1', group:'B', md:1, date:'2026-06-12', kickoff:'2026-06-12T19:00Z', home:'CAN', away:'BIH', venue:'BMO Field, Toronto',                  homeScore:1, awayScore:1,
     goals: [
@@ -102,8 +102,8 @@ export const FIXTURES = [
       { team:'CAN', name:'Cyle Larin', minute:"74'" },
       { team:'CAN', name:'Tajon Buchanan', minute:"88'" },
     ] },
-  { id:'B5', group:'B', md:3, date:'2026-06-24', kickoff:'2026-06-24T19:00Z', home:'SUI', away:'CAN', venue:'BC Place, Vancouver',                  homeScore:null, awayScore:null },
-  { id:'B6', group:'B', md:3, date:'2026-06-24', kickoff:'2026-06-24T19:00Z', home:'BIH', away:'QAT', venue:'Lumen Field, Seattle',                 homeScore:null, awayScore:null },
+  { id:'B5', group:'B', md:3, date:'2026-06-24', kickoff:'2026-06-24T19:00Z', home:'SUI', away:'CAN', venue:'BC Place, Vancouver',                  homeScore:3, awayScore:1 },
+  { id:'B6', group:'B', md:3, date:'2026-06-24', kickoff:'2026-06-24T19:00Z', home:'BIH', away:'QAT', venue:'Lumen Field, Seattle',                 homeScore:3, awayScore:1 },
   // GROUP C
   { id:'C1', group:'C', md:1, date:'2026-06-13', kickoff:'2026-06-13T22:00Z', home:'BRA', away:'MAR', venue:'MetLife Stadium, New York',            homeScore:1, awayScore:1,
     goals: [
@@ -124,8 +124,8 @@ export const FIXTURES = [
       { team:'BRA', name:'Matheus Cunha', minute:"36'" },
       { team:'BRA', name:'Vinicius Junior', minute:"45'" },
     ] },
-  { id:'C5', group:'C', md:3, date:'2026-06-24', kickoff:'2026-06-24T22:00Z', home:'SCO', away:'BRA', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
-  { id:'C6', group:'C', md:3, date:'2026-06-24', kickoff:'2026-06-24T22:00Z', home:'MAR', away:'HAI', venue:'MetLife Stadium, New York',            homeScore:null, awayScore:null },
+  { id:'C5', group:'C', md:3, date:'2026-06-24', kickoff:'2026-06-24T22:00Z', home:'SCO', away:'BRA', venue:'Hard Rock Stadium, Miami',             homeScore:0, awayScore:3 },
+  { id:'C6', group:'C', md:3, date:'2026-06-24', kickoff:'2026-06-24T22:00Z', home:'MAR', away:'HAI', venue:'MetLife Stadium, New York',            homeScore:4, awayScore:2 },
   // GROUP D
   { id:'D1', group:'D', md:1, date:'2026-06-12', kickoff:'2026-06-13T01:00Z', home:'USA', away:'PAR', venue:'SoFi Stadium, LA',                    homeScore:4, awayScore:1,
     goals: [
@@ -149,8 +149,8 @@ export const FIXTURES = [
     goals: [
       { team:'PAR', name:'Matias Galarza', minute:"72'" },
     ] },
-  { id:'D5', group:'D', md:3, date:'2026-06-26', kickoff:'2026-06-26T02:00Z', home:'TUR', away:'USA', venue:'AT&T Stadium, Dallas',                 homeScore:null, awayScore:null },
-  { id:'D6', group:'D', md:3, date:'2026-06-26', kickoff:'2026-06-26T02:00Z', home:'PAR', away:'AUS', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
+  { id:'D5', group:'D', md:3, date:'2026-06-26', kickoff:'2026-06-26T02:00Z', home:'TUR', away:'USA', venue:'AT&T Stadium, Dallas',                 homeScore:3, awayScore:2 },
+  { id:'D6', group:'D', md:3, date:'2026-06-26', kickoff:'2026-06-26T02:00Z', home:'PAR', away:'AUS', venue:'Arrowhead Stadium, Kansas City',       homeScore:0, awayScore:0 },
   // GROUP E
   { id:'E1', group:'E', md:1, date:'2026-06-14', kickoff:'2026-06-14T17:00Z', home:'GER', away:'CUW', venue:'NRG Stadium, Houston',                 homeScore:7, awayScore:1 },
   { id:'E2', group:'E', md:1, date:'2026-06-14', kickoff:'2026-06-14T23:00Z', home:'CIV', away:'ECU', venue:'Lincoln Financial Field, Philadelphia',homeScore:1, awayScore:0,
@@ -164,8 +164,8 @@ export const FIXTURES = [
       { team:'GER', name:'Deniz Undav', minute:"78'" },
     ] },
   { id:'E4', group:'E', md:2, date:'2026-06-21', kickoff:'2026-06-21T00:00Z', home:'ECU', away:'CUW', venue:'Arrowhead Stadium, Kansas City',       homeScore:0, awayScore:0 },
-  { id:'E5', group:'E', md:3, date:'2026-06-25', kickoff:'2026-06-25T20:00Z', home:'ECU', away:'GER', venue:'AT&T Stadium, Dallas',                 homeScore:null, awayScore:null },
-  { id:'E6', group:'E', md:3, date:'2026-06-25', kickoff:'2026-06-25T20:00Z', home:'CUW', away:'CIV', venue:'Arrowhead Stadium, Kansas City',       homeScore:null, awayScore:null },
+  { id:'E5', group:'E', md:3, date:'2026-06-25', kickoff:'2026-06-25T20:00Z', home:'ECU', away:'GER', venue:'AT&T Stadium, Dallas',                 homeScore:2, awayScore:1 },
+  { id:'E6', group:'E', md:3, date:'2026-06-25', kickoff:'2026-06-25T20:00Z', home:'CUW', away:'CIV', venue:'Arrowhead Stadium, Kansas City',       homeScore:0, awayScore:2 },
   // GROUP F
   { id:'F1', group:'F', md:1, date:'2026-06-14', kickoff:'2026-06-14T23:00Z', home:'NED', away:'JPN', venue:'AT&T Stadium, Dallas',                 homeScore:2, awayScore:2,
     goals: [
@@ -199,8 +199,8 @@ export const FIXTURES = [
       { team:'JPN', name:'Ayase Ueda', minute:"67'" },
       { team:'JPN', name:'Keito Nakamura', minute:"82'" },
     ] },
-  { id:'F5', group:'F', md:3, date:'2026-06-25', kickoff:'2026-06-25T23:00Z', home:'JPN', away:'SWE', venue:'AT&T Stadium, Dallas',                 homeScore:null, awayScore:null },
-  { id:'F6', group:'F', md:3, date:'2026-06-25', kickoff:'2026-06-25T23:00Z', home:'TUN', away:'NED', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
+  { id:'F5', group:'F', md:3, date:'2026-06-25', kickoff:'2026-06-25T23:00Z', home:'JPN', away:'SWE', venue:'AT&T Stadium, Dallas',                 homeScore:1, awayScore:1 },
+  { id:'F6', group:'F', md:3, date:'2026-06-25', kickoff:'2026-06-25T23:00Z', home:'TUN', away:'NED', venue:"Levi's Stadium, Santa Clara",          homeScore:1, awayScore:3 },
   // GROUP G
   { id:'G1', group:'G', md:1, date:'2026-06-15', kickoff:'2026-06-15T19:00Z', home:'BEL', away:'EGY', venue:'Lumen Field, Seattle',                 homeScore:1, awayScore:1,
     goals: [
@@ -222,8 +222,8 @@ export const FIXTURES = [
       { team:'NZL', name:'Elijah Just', minute:"60'" },
       { team:'EGY', name:'Mohamed Salah', minute:"78'" },
     ] },
-  { id:'G5', group:'G', md:3, date:'2026-06-26', kickoff:'2026-06-27T03:00Z', home:'EGY', away:'IRN', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
-  { id:'G6', group:'G', md:3, date:'2026-06-26', kickoff:'2026-06-27T03:00Z', home:'NZL', away:'BEL', venue:'Lincoln Financial Field, Philadelphia',homeScore:null, awayScore:null },
+  { id:'G5', group:'G', md:3, date:'2026-06-26', kickoff:'2026-06-27T03:00Z', home:'EGY', away:'IRN', venue:'Hard Rock Stadium, Miami',             homeScore:1, awayScore:1 },
+  { id:'G6', group:'G', md:3, date:'2026-06-26', kickoff:'2026-06-27T03:00Z', home:'NZL', away:'BEL', venue:'Lincoln Financial Field, Philadelphia',homeScore:1, awayScore:5 },
   // GROUP H
   { id:'H1', group:'H', md:1, date:'2026-06-15', kickoff:'2026-06-15T16:00Z', home:'ESP', away:'CPV', venue:'Mercedes-Benz Stadium, Atlanta',       homeScore:0, awayScore:0 },
   { id:'H2', group:'H', md:1, date:'2026-06-15', kickoff:'2026-06-15T22:00Z', home:'SAU', away:'URU', venue:'Hard Rock Stadium, Miami',             homeScore:1, awayScore:1,
@@ -245,8 +245,8 @@ export const FIXTURES = [
       { team:'URU', name:'Maxi Araujo', minute:"45'" },
       { team:'CPV', name:'Helio Varela', minute:"72'" },
     ] },
-  { id:'H5', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T00:00Z', home:'CPV', away:'SAU', venue:'Camping World Stadium, Orlando',       homeScore:null, awayScore:null },
-  { id:'H6', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T00:00Z', home:'URU', away:'ESP', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
+  { id:'H5', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T00:00Z', home:'CPV', away:'SAU', venue:'Camping World Stadium, Orlando',       homeScore:0, awayScore:0 },
+  { id:'H6', group:'H', md:3, date:'2026-06-26', kickoff:'2026-06-27T00:00Z', home:'URU', away:'ESP', venue:'Hard Rock Stadium, Miami',             homeScore:0, awayScore:1 },
   // GROUP I
   { id:'I1', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T19:00Z', home:'FRA', away:'SEN', venue:'MetLife Stadium, New York',            homeScore:3, awayScore:1 },
   { id:'I2', group:'I', md:1, date:'2026-06-16', kickoff:'2026-06-16T22:00Z', home:'IRQ', away:'NOR', venue:'Gillette Stadium, Boston',              homeScore:1, awayScore:4,
@@ -271,8 +271,8 @@ export const FIXTURES = [
       { team:'NOR', name:'Leo Ostigard', minute:"70'" },
       { team:'SEN', name:'Ismaila Sarr', minute:"90+5'" },
     ] },
-  { id:'I5', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'NOR', away:'FRA', venue:'Gillette Stadium, Boston',             homeScore:null, awayScore:null },
-  { id:'I6', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'SEN', away:'IRQ', venue:'BMO Field, Toronto',                   homeScore:null, awayScore:null },
+  { id:'I5', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'NOR', away:'FRA', venue:'Gillette Stadium, Boston',             homeScore:4, awayScore:1 },
+  { id:'I6', group:'I', md:3, date:'2026-06-26', kickoff:'2026-06-26T19:00Z', home:'SEN', away:'IRQ', venue:'BMO Field, Toronto',                   homeScore:5, awayScore:0 },
   // GROUP J
   { id:'J1', group:'J', md:1, date:'2026-06-16', kickoff:'2026-06-17T01:00Z', home:'ARG', away:'ALG', venue:'Arrowhead Stadium, Kansas City',       homeScore:3, awayScore:0,
     goals: [
@@ -299,8 +299,8 @@ export const FIXTURES = [
       { team:'ALG', name:'Nadhir Benbouali', minute:"69'" },
       { team:'ALG', name:'Amine Gouiri', minute:"82'" },
     ] },
-  { id:'J5', group:'J', md:3, date:'2026-06-27', kickoff:'2026-06-28T02:00Z', home:'JOR', away:'ARG', venue:'AT&T Stadium, Dallas',                 homeScore:null, awayScore:null },
-  { id:'J6', group:'J', md:3, date:'2026-06-27', kickoff:'2026-06-28T02:00Z', home:'ALG', away:'AUT', venue:"Levi's Stadium, Santa Clara",          homeScore:null, awayScore:null },
+  { id:'J5', group:'J', md:3, date:'2026-06-27', kickoff:'2026-06-28T02:00Z', home:'JOR', away:'ARG', venue:'AT&T Stadium, Dallas',                 homeScore:1, awayScore:3 },
+  { id:'J6', group:'J', md:3, date:'2026-06-27', kickoff:'2026-06-28T02:00Z', home:'ALG', away:'AUT', venue:"Levi's Stadium, Santa Clara",          homeScore:3, awayScore:3 },
   // GROUP K
   { id:'K1', group:'K', md:1, date:'2026-06-17', kickoff:'2026-06-17T17:00Z', home:'POR', away:'COD', venue:'NRG Stadium, Houston',                 homeScore:1, awayScore:1,
     goals: [
@@ -323,8 +323,8 @@ export const FIXTURES = [
       { team:'POR', name:'Bruno Fernandes', minute:"85'" },
     ] },
   { id:'K4', group:'K', md:2, date:'2026-06-23', kickoff:'2026-06-24T02:00Z', home:'COL', away:'COD', venue:'Estadio Akron, Guadalajara',           homeScore:null, awayScore:null },
-  { id:'K5', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COD', away:'UZB', venue:'Mercedes-Benz Stadium, Atlanta',       homeScore:null, awayScore:null },
-  { id:'K6', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COL', away:'POR', venue:'Hard Rock Stadium, Miami',             homeScore:null, awayScore:null },
+  { id:'K5', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COD', away:'UZB', venue:'Mercedes-Benz Stadium, Atlanta',       homeScore:3, awayScore:1 },
+  { id:'K6', group:'K', md:3, date:'2026-06-27', kickoff:'2026-06-27T23:30Z', home:'COL', away:'POR', venue:'Hard Rock Stadium, Miami',             homeScore:0, awayScore:0 },
   // GROUP L
   { id:'L1', group:'L', md:1, date:'2026-06-17', kickoff:'2026-06-17T20:00Z', home:'ENG', away:'CRO', venue:'AT&T Stadium, Dallas',                 homeScore:4, awayScore:2,
     goals: [
@@ -341,8 +341,8 @@ export const FIXTURES = [
     ] },
   { id:'L3', group:'L', md:2, date:'2026-06-23', kickoff:'2026-06-23T22:00Z', home:'ENG', away:'GHA', venue:'Gillette Stadium, Boston',             homeScore:0, awayScore:0 },
   { id:'L4', group:'L', md:2, date:'2026-06-23', kickoff:'2026-06-23T23:00Z', home:'PAN', away:'CRO', venue:'BMO Field, Toronto',                    homeScore:null, awayScore:null },
-  { id:'L5', group:'L', md:3, date:'2026-06-27', kickoff:'2026-06-27T21:00Z', home:'PAN', away:'ENG', venue:'MetLife Stadium, New York',            homeScore:null, awayScore:null },
-  { id:'L6', group:'L', md:3, date:'2026-06-27', kickoff:'2026-06-27T21:00Z', home:'CRO', away:'GHA', venue:'Lincoln Financial Field, Philadelphia',homeScore:null, awayScore:null },
+  { id:'L5', group:'L', md:3, date:'2026-06-27', kickoff:'2026-06-27T21:00Z', home:'PAN', away:'ENG', venue:'MetLife Stadium, New York',            homeScore:0, awayScore:2 },
+  { id:'L6', group:'L', md:3, date:'2026-06-27', kickoff:'2026-06-27T21:00Z', home:'CRO', away:'GHA', venue:'Lincoln Financial Field, Philadelphia',homeScore:2, awayScore:1 },
 ]
 
 export const GROUP_LABELS = ['A','B','C','D','E','F','G','H','I','J','K','L']
