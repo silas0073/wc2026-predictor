@@ -76,3 +76,29 @@
 .oddsNum { font-family:var(--mono); font-weight:600; }
 .formRow { display:flex; justify-content:space-between; font-size:.7rem; }
 .formLabel { font-size:.58rem; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; }
+
+/* ── Section toggle ──────────────────────────────────────── */
+.sectionToggle {
+  display:flex; gap:8px; margin-bottom:14px;
+}
+.sToggleBtn {
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+  background:var(--bg2); border:1px solid var(--border);
+  color:var(--muted); font-size:.78rem; font-weight:600;
+  padding:8px 12px; border-radius:8px; cursor:pointer;
+  transition:all .15s; font-family:inherit;
+}
+.sToggleBtn:disabled { opacity:.35; cursor:default; }
+.sToggleActive {
+  background:var(--accent); border-color:var(--accent); color:#fff;
+}
+
+/* ── TBD / unresolved slot rows ─────────────────────────── */
+.rowTBD { opacity:.7; }
+.nameTBD { color:var(--muted); font-style:italic; font-size:.8rem; }
+
+/* ── Shootout note ───────────────────────────────────────── */
+.shootoutNote {
+  display:block; font-size:.65rem; color:var(--muted);
+  text-align:center; margin-top:2px;
+}
