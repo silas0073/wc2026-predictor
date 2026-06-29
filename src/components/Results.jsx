@@ -39,7 +39,6 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
   const [idx, setIdx] = useState(0)
   const iframeRef = useRef(null)
 
-  // Reset candidate index when closed
   useEffect(() => { if (!isOpen) setIdx(0) }, [isOpen])
 
   if (loading) return (
@@ -67,7 +66,7 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
 
   const tryNext = () => {
     if (idx + 1 < candidates.length) setIdx(i => i + 1)
-    else onClose() // all exhausted, give up
+    else onClose()
   }
 
   return (
@@ -110,14 +109,139 @@ function HighlightEmbed({ fixture, isOpen, onOpen, onClose }) {
   )
 }
 
-export default function Results({ predictions = {}, fixtures = FIXTURES }) {
+const ROUND_LABELS = {
+  R32: 'Round of 32',
+  R16: 'Round of 16',
+  QF:  'Quarter-Finals',
+  SF:  'Semi-Finals',
+  F:   'Final',
+  TPF: '3rd Place Play-off',
+}
+
+function MatchRow({ f, predictions, openHighlight, setOpenHighlight, isKnockout }) {
+  const home = teamObj(f.home)
+  const away = teamObj(f.away)
+  const hw = f.homeScore > f.awayScore
+  const aw = f.awayScore > f.homeScore
+  const pred = predictions?.[f.id]
+  const hasPred = pred?.h != null
+
+  // Shootout display
+  const hasShootout = f.homeShootout != null && f.awayShootout != null
+  const shootoutWinnerHome = hasShootout && f.homeShootout > f.awayShootout
+  const shootoutWinnerAway = hasShootout && f.awayShootout > f.homeShootout
+
+  return (
+    <div className={styles.row}>
+      <div className={styles.rowTop}>
+        {isKnockout ? (
+          <span className={styles.grp}>{ROUND_LABELS[f.round] || f.round}</span>
+        ) : (
+          <span className={styles.grp}>Grp {f.group}</span>
+        )}
+        <div className={styles.teams}>
+          <div className={`${styles.team} ${styles.teamL}`}>
+            <span className={styles.flag}>{home.flag}</span>
+            <span className={`${styles.name} ${(hw || shootoutWinnerHome) ? styles.winner : ''}`}>{home.name}</span>
+          </div>
+          <div className={styles.scoreBox}>
+            <span className={`${styles.s} ${(hw || shootoutWinnerHome) ? styles.sWin : ''}`}>{f.homeScore}</span>
+            <span className={styles.sdash}>–</span>
+            <span className={`${styles.s} ${(aw || shootoutWinnerAway) ? styles.sWin : ''}`}>{f.awayScore}</span>
+            {hasShootout && (
+              <span className={styles.shootoutNote}>
+                ({f.homeShootout}–{f.awayShootout} pens)
+              </span>
+            )}
+            {hasPred && !isKnockout && (
+              <span className={styles.predBelow}>
+                {pred.h}–{pred.a}
+                {pred.h === f.homeScore && pred.a === f.awayScore
+                  ? <span className={styles.predExact}> ✓</span>
+                  : (pred.h > pred.a) === hw || (pred.h === pred.a && !hw && !aw)
+                    ? <span className={styles.predResult}> ~</span>
+                    : <span className={styles.predWrong}> ✗</span>
+                }
+              </span>
+            )}
+          </div>
+          <div className={`${styles.team} ${styles.teamR}`}>
+            <span className={`${styles.name} ${(aw || shootoutWinnerAway) ? styles.winner : ''}`}>{away.name}</span>
+            <span className={styles.flag}>{away.flag}</span>
+          </div>
+        </div>
+      </div>
+
+      {(f.goals?.length > 0 || f.redCards?.length > 0) && (() => {
+        const all = [
+          ...(f.goals || []).map(g => ({ ...g, kind: 'goal' })),
+          ...(f.redCards || []).map(r => ({ ...r, kind: 'red' })),
+        ]
+        const minuteNum = (m) => {
+          const match = (m || '').match(/(\d+)/)
+          return match ? parseInt(match[1], 10) : 999
+        }
+        all.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
+        const homeEvents = all.filter(e => e.team === f.home)
+        const awayEvents = all.filter(e => e.team === f.away)
+        const rows = Math.max(homeEvents.length, awayEvents.length)
+        return (
+          <div className={styles.events}>
+            {Array.from({ length: rows }).map((_, i) => {
+              const h = homeEvents[i]
+              const a = awayEvents[i]
+              return (
+                <div key={i} className={styles.eventRow}>
+                  <div className={styles.eventHome}>
+                    {h && <>
+                      <span className={styles.eventIcon}>{h.kind === 'goal' ? '⚽' : '🟥'}</span>
+                      <span className={styles.eventText}>{h.name}{h.ownGoal ? ' (OG)' : ''}</span>
+                      <span className={styles.eventMinute}>{h.minute}</span>
+                      <span className={styles.eventFlag}>{home.flag}</span>
+                    </>}
+                  </div>
+                  <div className={styles.eventAway}>
+                    {a && <>
+                      <span className={styles.eventFlag}>{away.flag}</span>
+                      <span className={styles.eventMinute}>{a.minute}</span>
+                      <span className={styles.eventText}>{a.name}{a.ownGoal ? ' (OG)' : ''}</span>
+                      <span className={styles.eventIcon}>{a.kind === 'goal' ? '⚽' : '🟥'}</span>
+                    </>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
+
+      <HighlightEmbed
+        fixture={f}
+        isOpen={openHighlight === f.id}
+        onOpen={() => setOpenHighlight(f.id)}
+        onClose={() => setOpenHighlight(null)}
+      />
+    </div>
+  )
+}
+
+export default function Results({ predictions = {}, fixtures = FIXTURES, knockoutFixtures = [] }) {
+  const [section, setSection] = useState('group')
   const [filterGroup, setFilterGroup] = useState('ALL')
+  const [filterRound, setFilterRound] = useState('ALL')
   const [openHighlight, setOpenHighlight] = useState(null)
 
-  const played = fixtures.filter(f => f.homeScore !== null)
-  const filtered = filterGroup === 'ALL' ? played : played.filter(f => f.group === filterGroup)
+  const playedGroup = fixtures.filter(f => f.homeScore !== null)
+  const playedKnockout = knockoutFixtures.filter(f => f.homeScore !== null && f.home && f.away)
 
-  if (played.length === 0) {
+  const filteredGroup = filterGroup === 'ALL' ? playedGroup : playedGroup.filter(f => f.group === filterGroup)
+  const filteredKnockout = filterRound === 'ALL' ? playedKnockout : playedKnockout.filter(f => f.round === filterRound)
+
+  const knockoutRounds = [...new Set(playedKnockout.map(f => f.round))]
+
+  const totalPlayed = playedGroup.length + playedKnockout.length
+
+  if (totalPlayed === 0) {
     return (
       <div className={styles.wrap}>
         <div className={styles.pageHeader}>
@@ -133,125 +257,102 @@ export default function Results({ predictions = {}, fixtures = FIXTURES }) {
     )
   }
 
-  const byDate = filtered.reduce((acc, f) => {
-    if (!acc[f.date]) acc[f.date] = []
-    acc[f.date].push(f)
-    return acc
-  }, {})
-  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a))
+  const byDate = (list) => {
+    const acc = list.reduce((a, f) => {
+      if (!a[f.date]) a[f.date] = []
+      a[f.date].push(f)
+      return a
+    }, {})
+    return Object.keys(acc).sort((a,b) => b.localeCompare(a)).map(d => ({ date: d, matches: acc[d] }))
+  }
 
   return (
     <div className={styles.wrap}>
       <div className={styles.pageHeader}>
         <h2>Results</h2>
-        <p>{played.length} of 48 group stage matches played</p>
+        <p>{playedGroup.length} group stage · {playedKnockout.length} knockout matches played</p>
       </div>
 
-      <div className={styles.filters}>
-        <button className={`${styles.fBtn} ${filterGroup==='ALL' ? styles.fActive : ''}`} onClick={() => setFilterGroup('ALL')}>All</button>
-        {GROUP_LABELS.map(g => (
-          <button key={g} className={`${styles.fBtn} ${filterGroup===g ? styles.fActive : ''}`} onClick={() => setFilterGroup(g)}>Grp {g}</button>
-        ))}
+      {/* Section toggle */}
+      <div className={styles.sectionToggle}>
+        <button
+          className={`${styles.sToggleBtn} ${section === 'group' ? styles.sToggleActive : ''}`}
+          onClick={() => setSection('group')}
+        >
+          Group Stage
+        </button>
+        <button
+          className={`${styles.sToggleBtn} ${section === 'knockout' ? styles.sToggleActive : ''}`}
+          onClick={() => setSection('knockout')}
+          disabled={playedKnockout.length === 0}
+        >
+          Knockout {playedKnockout.length > 0 && <span className={styles.sToggleBadge}>{playedKnockout.length}</span>}
+        </button>
       </div>
 
-      {dates.map(date => (
-        <div key={date} className={styles.dateBlock}>
-          <div className={styles.dateHeader}>{formatDate(date)}</div>
-          {byDate[date].map(f => {
-            const home = teamObj(f.home)
-            const away = teamObj(f.away)
-            const hw = f.homeScore > f.awayScore
-            const aw = f.awayScore > f.homeScore
-            const pred = predictions[f.id]
-            const hasPred = pred?.h != null
-
-            return (
-              <div key={f.id} className={styles.row}>
-                <div className={styles.rowTop}>
-                  <span className={styles.grp}>Grp {f.group}</span>
-                  <div className={styles.teams}>
-                    <div className={`${styles.team} ${styles.teamL}`}>
-                      <span className={styles.flag}>{home.flag}</span>
-                      <span className={`${styles.name} ${hw ? styles.winner : ''}`}>{home.name}</span>
-                    </div>
-                    <div className={styles.scoreBox}>
-                      <span className={`${styles.s} ${hw ? styles.sWin : ''}`}>{f.homeScore}</span>
-                      <span className={styles.sdash}>–</span>
-                      <span className={`${styles.s} ${aw ? styles.sWin : ''}`}>{f.awayScore}</span>
-                      {hasPred && (
-                        <span className={styles.predBelow}>
-                          {pred.h}–{pred.a}
-                          {pred.h === f.homeScore && pred.a === f.awayScore
-                            ? <span className={styles.predExact}> ✓</span>
-                            : (pred.h > pred.a) === hw || (pred.h === pred.a && !hw && !aw)
-                              ? <span className={styles.predResult}> ~</span>
-                              : <span className={styles.predWrong}> ✗</span>
-                          }
-                        </span>
-                      )}
-                    </div>
-                    <div className={`${styles.team} ${styles.teamR}`}>
-                      <span className={`${styles.name} ${aw ? styles.winner : ''}`}>{away.name}</span>
-                      <span className={styles.flag}>{away.flag}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {(f.goals?.length > 0 || f.redCards?.length > 0) && (() => {
-                  const all = [
-                    ...(f.goals || []).map(g => ({ ...g, kind: 'goal' })),
-                    ...(f.redCards || []).map(r => ({ ...r, kind: 'red' })),
-                  ]
-                  const minuteNum = (m) => {
-                    const match = (m || '').match(/(\d+)/)
-                    return match ? parseInt(match[1], 10) : 999
-                  }
-                  all.sort((a,b) => minuteNum(a.minute) - minuteNum(b.minute))
-                  const homeEvents = all.filter(e => e.team === f.home)
-                  const awayEvents = all.filter(e => e.team === f.away)
-                  const rows = Math.max(homeEvents.length, awayEvents.length)
-                  return (
-                    <div className={styles.events}>
-                      {Array.from({ length: rows }).map((_, i) => {
-                        const h = homeEvents[i]
-                        const a = awayEvents[i]
-                        return (
-                          <div key={i} className={styles.eventRow}>
-                            <div className={styles.eventHome}>
-                              {h && <>
-                                <span className={styles.eventIcon}>{h.kind === 'goal' ? '⚽' : '🟥'}</span>
-                                <span className={styles.eventText}>{h.name}{h.ownGoal ? ' (OG)' : ''}</span>
-                                <span className={styles.eventMinute}>{h.minute}</span>
-                                <span className={styles.eventFlag}>{home.flag}</span>
-                              </>}
-                            </div>
-                            <div className={styles.eventAway}>
-                              {a && <>
-                                <span className={styles.eventFlag}>{away.flag}</span>
-                                <span className={styles.eventMinute}>{a.minute}</span>
-                                <span className={styles.eventText}>{a.name}{a.ownGoal ? ' (OG)' : ''}</span>
-                                <span className={styles.eventIcon}>{a.kind === 'goal' ? '⚽' : '🟥'}</span>
-                              </>}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
-
-                <HighlightEmbed
-                  fixture={f}
-                  isOpen={openHighlight === f.id}
-                  onOpen={() => setOpenHighlight(f.id)}
-                  onClose={() => setOpenHighlight(null)}
+      {section === 'group' && (
+        <>
+          <div className={styles.filters}>
+            <button className={`${styles.fBtn} ${filterGroup==='ALL' ? styles.fActive : ''}`} onClick={() => setFilterGroup('ALL')}>All</button>
+            {GROUP_LABELS.map(g => (
+              <button key={g} className={`${styles.fBtn} ${filterGroup===g ? styles.fActive : ''}`} onClick={() => setFilterGroup(g)}>Grp {g}</button>
+            ))}
+          </div>
+          {byDate(filteredGroup).map(({ date, matches }) => (
+            <div key={date} className={styles.dateBlock}>
+              <div className={styles.dateHeader}>{formatDate(date)}</div>
+              {matches.map(f => (
+                <MatchRow
+                  key={f.id}
+                  f={f}
+                  predictions={predictions}
+                  openHighlight={openHighlight}
+                  setOpenHighlight={setOpenHighlight}
+                  isKnockout={false}
                 />
+              ))}
+            </div>
+          ))}
+        </>
+      )}
+
+      {section === 'knockout' && (
+        <>
+          {playedKnockout.length === 0 ? (
+            <div className={styles.empty}>
+              <div className={styles.emptyIcon}>🏆</div>
+              <div className={styles.emptyTitle}>No knockout matches played yet</div>
+              <div className={styles.emptySub}>The Round of 32 kicks off June 28, 2026.</div>
+            </div>
+          ) : (
+            <>
+              <div className={styles.filters}>
+                <button className={`${styles.fBtn} ${filterRound==='ALL' ? styles.fActive : ''}`} onClick={() => setFilterRound('ALL')}>All</button>
+                {knockoutRounds.map(r => (
+                  <button key={r} className={`${styles.fBtn} ${filterRound===r ? styles.fActive : ''}`} onClick={() => setFilterRound(r)}>
+                    {ROUND_LABELS[r] || r}
+                  </button>
+                ))}
               </div>
-            )
-          })}
-        </div>
-      ))}
+              {byDate(filteredKnockout).map(({ date, matches }) => (
+                <div key={date} className={styles.dateBlock}>
+                  <div className={styles.dateHeader}>{formatDate(date)}</div>
+                  {matches.map(f => (
+                    <MatchRow
+                      key={f.id}
+                      f={f}
+                      predictions={predictions}
+                      openHighlight={openHighlight}
+                      setOpenHighlight={setOpenHighlight}
+                      isKnockout={true}
+                    />
+                  ))}
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }
-
