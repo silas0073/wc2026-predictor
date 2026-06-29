@@ -360,10 +360,10 @@ export const KNOCKOUT_FIXTURES = [
   // ROUND OF 32 (16 matches)
   { id:'M73', round:'R32', date:'2026-06-28', kickoff:'2026-06-28T19:00Z', venue:'SoFi Stadium, Los Angeles',            home:{g:'A',p:2}, away:{g:'B',p:2}, homeScore:null, awayScore:null },
   { id:'M76', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T17:00Z', venue:'NRG Stadium, Houston',                  home:{g:'C',p:1}, away:{g:'F',p:2}, homeScore:null, awayScore:null },
-  { id:'M74', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T20:30Z', venue:'Gillette Stadium, Foxborough',          home:{g:'E',p:1}, away:'SWE', homeScore:null, awayScore:null },
+  { id:'M74', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T20:30Z', venue:'Gillette Stadium, Foxborough',          home:{g:'E',p:1}, away:'PAR', homeScore:null, awayScore:null },
   { id:'M75', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T01:00Z', venue:'Estadio Akron, Guadalajara',            home:{g:'F',p:1}, away:{g:'C',p:2}, homeScore:null, awayScore:null },
   { id:'M78', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T17:00Z', venue:'AT&T Stadium, Arlington',               home:{g:'E',p:2}, away:{g:'I',p:2}, homeScore:null, awayScore:null },
-  { id:'M77', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T21:00Z', venue:'MetLife Stadium, East Rutherford',      home:{g:'I',p:1}, away:'PAR', homeScore:null, awayScore:null },
+  { id:'M77', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T21:00Z', venue:'MetLife Stadium, East Rutherford',      home:{g:'I',p:1}, away:'SWE', homeScore:null, awayScore:null },
   { id:'M79', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T01:00Z', venue:'Estadio Azteca, Mexico City',           home:{g:'A',p:1}, away:'ECU', homeScore:null, awayScore:null },
   { id:'M80', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T16:00Z', venue:'Mercedes-Benz Stadium, Atlanta',        home:{g:'L',p:1}, away:'COD', homeScore:null, awayScore:null },
   { id:'M82', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T20:00Z', venue:'Lumen Field, Seattle',                  home:{g:'G',p:1}, away:'ALG', homeScore:null, awayScore:null },
