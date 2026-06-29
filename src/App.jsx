@@ -177,7 +177,7 @@ export default function App() {
             </>
           )}
           {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} />}
-          {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} knockoutFixtures={knockoutFixtures} />}
           {tab === 'table'     && <TableView predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'knockout'  && <Knockout fixtures={knockoutFixtures} />}
           {tab === 'ai'        && <AIPredictions onApply={bulkPredict} />}
