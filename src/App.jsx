@@ -176,7 +176,7 @@ export default function App() {
               )}
             </>
           )}
-          {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} />}
+          {tab === 'schedule'  && <Schedule predictions={predictions} fixtures={liveFixtures} knockoutFixtures={knockoutFixtures} />}
           {tab === 'results'   && <Results predictions={predictions} fixtures={liveFixtures} knockoutFixtures={knockoutFixtures} />}
           {tab === 'table'     && <TableView predictions={predictions} fixtures={liveFixtures} />}
           {tab === 'knockout'  && <Knockout fixtures={knockoutFixtures} />}
