@@ -226,7 +226,7 @@ function MatchRow({ f, predictions, openHighlight, setOpenHighlight, isKnockout 
 }
 
 export default function Results({ predictions = {}, fixtures = FIXTURES, knockoutFixtures = [] }) {
-  const [section, setSection] = useState('group')
+  const [section, setSection] = useState('knockout')
   const [filterGroup, setFilterGroup] = useState('ALL')
   const [filterRound, setFilterRound] = useState('ALL')
   const [openHighlight, setOpenHighlight] = useState(null)
