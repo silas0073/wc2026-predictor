@@ -358,10 +358,10 @@ export const GROUP_LABELS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 // is patched post-match, same workflow as group stage).
 export const KNOCKOUT_FIXTURES = [
   // ROUND OF 32 (16 matches)
-  { id:'M73', round:'R32', date:'2026-06-28', kickoff:'2026-06-28T19:00Z', venue:'SoFi Stadium, Los Angeles',            home:{g:'A',p:2}, away:{g:'B',p:2}, homeScore:null, awayScore:null },
-  { id:'M76', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T17:00Z', venue:'NRG Stadium, Houston',                  home:{g:'C',p:1}, away:{g:'F',p:2}, homeScore:null, awayScore:null },
-  { id:'M74', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T20:30Z', venue:'Gillette Stadium, Foxborough',          home:{g:'E',p:1}, away:'PAR', homeScore:null, awayScore:null },
-  { id:'M75', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T01:00Z', venue:'Estadio Akron, Guadalajara',            home:{g:'F',p:1}, away:{g:'C',p:2}, homeScore:null, awayScore:null },
+  { id:'M73', round:'R32', date:'2026-06-28', kickoff:'2026-06-28T19:00Z', venue:'SoFi Stadium, Los Angeles',            home:{g:'A',p:2}, away:{g:'B',p:2}, homeScore:0, awayScore:1, goals:[{minute:'90+2',team:null,name:'Stephen Eustaquio'}] },
+  { id:'M76', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T17:00Z', venue:'NRG Stadium, Houston',                  home:{g:'C',p:1}, away:{g:'F',p:2}, homeScore:2, awayScore:1 },
+  { id:'M74', round:'R32', date:'2026-06-29', kickoff:'2026-06-29T20:30Z', venue:'Gillette Stadium, Foxborough',          home:{g:'E',p:1}, away:'PAR', homeScore:1, awayScore:1, homeShootout:3, awayShootout:4 },
+  { id:'M75', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T01:00Z', venue:'Estadio Monterrey, Monterrey',           home:{g:'F',p:1}, away:{g:'C',p:2}, homeScore:1, awayScore:1, homeShootout:2, awayShootout:3 },
   { id:'M78', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T17:00Z', venue:'AT&T Stadium, Arlington',               home:{g:'E',p:2}, away:{g:'I',p:2}, homeScore:null, awayScore:null },
   { id:'M77', round:'R32', date:'2026-06-30', kickoff:'2026-06-30T21:00Z', venue:'MetLife Stadium, East Rutherford',      home:{g:'I',p:1}, away:'SWE', homeScore:null, awayScore:null },
   { id:'M79', round:'R32', date:'2026-07-01', kickoff:'2026-07-01T01:00Z', venue:'Estadio Azteca, Mexico City',           home:{g:'A',p:1}, away:'ECU', homeScore:null, awayScore:null },
