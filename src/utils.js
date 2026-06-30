@@ -317,13 +317,22 @@ export function resolveKnockoutFixtures(fixtures = FIXTURES, knockoutFixtures = 
     if (slot.w != null) {
       const m = byId[`M${slot.w}`]
       if (!m || m.homeScore === null || m.awayScore === null) return null
-      if (m.homeScore === m.awayScore) return null // shouldn't happen in knockout (extra time/pens resolve it)
+      if (m.homeScore === m.awayScore) {
+        // Level after 90+ET -> decided on penalties
+        if (m.homeShootout == null || m.awayShootout == null) return null
+        if (m.homeShootout === m.awayShootout) return null
+        return m.homeShootout > m.awayShootout ? m.home : m.away
+      }
       return m.homeScore > m.awayScore ? m.home : m.away
     }
     if (slot.l != null) {
       const m = byId[`M${slot.l}`]
       if (!m || m.homeScore === null || m.awayScore === null) return null
-      if (m.homeScore === m.awayScore) return null
+      if (m.homeScore === m.awayScore) {
+        if (m.homeShootout == null || m.awayShootout == null) return null
+        if (m.homeShootout === m.awayShootout) return null
+        return m.homeShootout > m.awayShootout ? m.away : m.home
+      }
       return m.homeScore > m.awayScore ? m.away : m.home
     }
     return null
