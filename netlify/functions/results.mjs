@@ -87,13 +87,21 @@ function extractEvents(summary, teamAbbrevById) {
 export default async (req) => {
   try {
     const allEvents = []
+    const failedDates = []
 
-    // ESPN scoreboard defaults to "today" — we need a date range covering the
-    // whole tournament (11 Jun group stage through 19 Jul final). Fetch
-    // day-by-day in parallel.
+    // Fetching all 40 tournament dates (+ a summary call per finished/live
+    // match) on every 60s poll was almost certainly hitting Netlify's
+    // function timeout / ESPN rate-limiting once the tournament reached the
+    // knockout rounds (88+ matches = 40 scoreboard calls + 88 summary calls
+    // = 128 concurrent outbound fetches per poll). Instead, only fetch a
+    // rolling window around "now": far enough back to catch any match that
+    // might still need live-merging (recent knockout rounds), and a few days
+    // forward for upcoming fixtures. Completed matches outside this window
+    // are assumed already patched into data.js.
     const dates = []
-    const start = new Date('2026-06-11')
-    const end = new Date('2026-07-20')
+    const now = new Date()
+    const start = new Date(now); start.setDate(start.getDate() - 10)
+    const end = new Date(now); end.setDate(end.getDate() + 3)
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       dates.push(d.toISOString().slice(0,10).replace(/-/g,''))
     }
@@ -103,7 +111,9 @@ export default async (req) => {
         const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}&limit=50`)
         const json = await res.json()
         if (json.events) allEvents.push(...json.events)
-      } catch {}
+      } catch {
+        failedDates.push(dateStr)
+      }
     }))
 
     // Build results keyed by "HOMECODE-AWAYCODE"
@@ -155,7 +165,7 @@ export default async (req) => {
       results[key] = entry
     }))
 
-    return new Response(JSON.stringify({ results, updated: new Date().toISOString(), count: Object.keys(results).length }), {
+    return new Response(JSON.stringify({ results, updated: new Date().toISOString(), count: Object.keys(results).length, datesFetched: dates.length, datesFailed: failedDates }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
